@@ -1,2 +1,2 @@
-# module-ballerinax-mqtt
+# module-ballerina-mqtt
 Ballerina MQTT Module.
