@@ -6,7 +6,7 @@
 [![GraalVM Check](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/build-with-bal-test-graalvm.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/build-with-bal-test-graalvm.yml)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-mqtt.svg)](https://github.com/ballerina-platform/module-ballerina-mqtt/commits/master)
 
-This Library provides an implementation to interact with MQTT servers via MQTT client and listener.
+This Library provides an implementation to interact with MQTT servers via MQTT client and listener
 
 MQTT is a lightweight, publish-subscribe, machine to machine network protocol for message queue/message queuing service.
 
