@@ -60,11 +60,6 @@ service on mqttSubscriber {
     remote function onError(mqtt:Error err) returns error? {
         log:printError("Error occured ", err);
     }
-
-    remote function onCompleted(mqtt:DeliveryToken token) returns error? {
-        log:printInfo(string`Message ${token.messageId.toString()} delivered`);
-        log:printInfo(check string:fromBytes(token.message.payload));
-    }
 }
 ```
 The `mqtt:Caller` can be used to indicate that the application has completed processing the message by using `complete()` api.
