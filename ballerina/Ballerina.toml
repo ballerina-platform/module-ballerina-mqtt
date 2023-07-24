@@ -11,7 +11,7 @@ distribution = "2201.6.0"
 groupId = "io.ballerina.stdlib"
 artifactId = "mqtt-native"
 version = "0.1.0"
-path = "../native/build/libs/mqtt-native-0.1.0-SNAPSHOT.jar"
+path = "../native/build/libs/mqtt-native-0.1.0.jar"
 
 [[platform.java11.dependency]]
 groupId = "org.eclipse.paho"
