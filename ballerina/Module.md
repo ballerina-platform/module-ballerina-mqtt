@@ -1,19 +1,12 @@
-# Ballerina MQTT Library
-
-[![Build](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/build-timestamped-master.yml)
-[![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-mqtt/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-mqtt)
-[![Trivy](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/trivy-scan.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/trivy-scan.yml)
-[![GraalVM Check](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/build-with-bal-test-graalvm.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-mqtt/actions/workflows/build-with-bal-test-graalvm.yml)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-mqtt.svg)](https://github.com/ballerina-platform/module-ballerina-mqtt/commits/master)
-
-This Library provides an implementation to interact with MQTT servers via MQTT client and listener.
+## Overview
+This module provides an implementation to interact with MQTT servers via MQTT client and listener.
 
 MQTT is a lightweight, publish-subscribe, machine to machine network protocol for message queue/message queuing service.
 
 ### Publisher and subscriber
 #### MQTT publisher
-A MQTT publisher is a MQTT client that publishes messages to the MQTT server. When working with a MQTT client, the first thing to do is to initialize the client.
-For the publisher to work successfully, an active MQTT server should be available.
+A MQTT publisher is a Mqtt client that publishes messages to the Mqtt server. When working with a Mqtt client, the first thing to do is to initialize the client.
+For the publisher to work successfully, an active Mqtt server should be available.
 
 The code snippet given below initializes a publisher client with the basic configuration.
 ```ballerina
@@ -29,13 +22,13 @@ mqtt:ClientConfiguration clientConfiguration = {
 
 mqtt:Client mqttClient = check new (mqtt:DEFAULT_URL, uuid:createType1AsString(), clientConfiguration); // A unique id needs to be provided as the client id
 ```
-Using the `publish` api of this client, messages can be sent to the MQTT server.
+Using the `publish` api of this client, messages can be sent to the Mqtt server.
 ```ballerina
-check mqttClient->publish("mqtt/test", {payload: "This is Ballerina MQTT client!!!".toBytes()});
+check mqttClient->publish("mqtt/test", {payload: "This is Ballerina Mqtt client!!!".toBytes()});
 ```
-#### MQTT subscriber
-A MQTT subscriber is a client responsible for reading messages from one or more topics in the server. When working with a MQTT subscriber, the first thing to do is initialize the subscriber.
-For the subscriber to work successfully, an active MQTT server should be available.
+#### Mqtt subscriber
+A Mqtt subscriber is a client responsible for reading messages from one or more topics in the server. When working with a Mqtt subscriber, the first thing to do is initialize the subscriber.
+For the subscriber to work successfully, an active Mqtt server should be available.
 
 The code snippet given below initializes a subscriber with the basic configuration.
 ```ballerina
