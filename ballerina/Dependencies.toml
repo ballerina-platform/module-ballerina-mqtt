@@ -111,6 +111,22 @@ modules = [
 
 [[package]]
 org = "ballerina"
+name = "mqtt"
+version = "0.1.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.runtime"},
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "test"},
+	{org = "ballerina", name = "uuid"}
+]
+modules = [
+	{org = "ballerina", packageName = "mqtt", moduleName = "mqtt"}
+]
+
+[[package]]
+org = "ballerina"
 name = "observe"
 version = "1.0.7"
 scope = "testOnly"
@@ -152,21 +168,5 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
-]
-
-[[package]]
-org = "xlibb"
-name = "mqtt"
-version = "0.2.0"
-dependencies = [
-	{org = "ballerina", name = "crypto"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.runtime"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "test"},
-	{org = "ballerina", name = "uuid"}
-]
-modules = [
-	{org = "xlibb", packageName = "mqtt", moduleName = "mqtt"}
 ]
 
