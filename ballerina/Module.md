@@ -10,7 +10,7 @@ For the publisher to work successfully, an active Mqtt server should be availabl
 
 The code snippet given below initializes a publisher client with the basic configuration.
 ```ballerina
-import xlibb/mqtt;
+import ballerina/mqtt;
 import ballerina/uuid;
  
 mqtt:ClientConfiguration clientConfiguration = {
