@@ -1,0 +1,33 @@
+name: Daily build
+
+on:
+  repository_dispatch:
+    types:
+      check_connector_for_breaking_changes
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: 11
+
+      - name: Set environment variable
+        if: github.event.action == 'check_connector_for_breaking_changes'
+        run: |
+          echo "BUILD_USING_DOCKER=-PbuildUsingDocker=nightly" >> $GITHUB_ENV
+          echo "GRADLE_SKIP_TASKS=" >> $GITHUB_ENV
+
+      # Build the project with Gradle
+      - name: Build with Gradle
+        env:
+          packageUser: ${{ github.actor }}
+          packagePAT: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew clean build $GRADLE_SKIP_TASKS $BUILD_USING_DOCKER

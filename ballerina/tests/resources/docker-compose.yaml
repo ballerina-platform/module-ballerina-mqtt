@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+    mosquitto:
+        image: 'eclipse-mosquitto:latest'
+        hostname: mosquitto
+        container_name: mqtt-test-server
+        ports:
+            - '1883:1883'
+            - '1884:1884'
+            - '8883:8883'
+            - '8884:8884'
+            - '8887:8887'
+            - '8888:8888'
+            - '8889:8889'
+            - '8890:8890'
+        volumes:
+            - ./mosquitto_password.txt:/mosquitto/passwd_file
+            - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+            - ./certsandkeys/client.crt:/mosquitto/ca.crt
+            - ./certsandkeys/server.crt:/mosquitto/server.crt
+            - ./certsandkeys/server.key:/mosquitto/server.key
+            - ./certsandkeys/client.crt:/mosquitto/cacerts/client.crt
