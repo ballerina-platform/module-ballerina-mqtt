@@ -1,0 +1,26 @@
+[package]
+org = "ballerina"
+name = "mqtt"
+version = "0.1.0"
+authors = ["ballerina"]
+keywords = ["mqtt", "client", "messaging", "network", "pubsub", "iot"]
+repository = "https://github.com/ballerina-platform/module-mqtt"
+distribution = "2201.6.0"
+
+[[platform.java11.dependency]]
+groupId = "io.xlibb"
+artifactId = "mqtt-native"
+version = "0.1.0"
+path = "../native/build/libs/mqtt-native-0.1.0-SNAPSHOT.jar"
+
+[[platform.java11.dependency]]
+groupId = "org.eclipse.paho"
+artifactId = "org.eclipse.paho.mqttv5.client"
+version = "1.2.5"
+path = "./lib/org.eclipse.paho.mqttv5.client-1.2.5.jar"
+
+[[platform.java11.dependency]]
+groupId = "org.bouncycastle"
+artifactId = "bcpkix-jdk15on"
+version = "1.69"
+path = "./lib/bcpkix-jdk15on-1.69.jar"
