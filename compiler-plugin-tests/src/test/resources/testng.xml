@@ -21,7 +21,7 @@
 <suite name="BallerinaMqttCompilerPluginTests">
     <test name="UnitTests">
         <classes>
-<!--            <class name="io.ballerina.stdlib.mqtt.compiler.MqttServiceValidationTest"/>-->
+            <class name="io.ballerina.stdlib.mqtt.compiler.MqttServiceValidationTest"/>
             <class name="io.ballerina.stdlib.mqtt.compiler.CodeSnippetGenerationCodeActionTest"/>
         </classes>
     </test>
