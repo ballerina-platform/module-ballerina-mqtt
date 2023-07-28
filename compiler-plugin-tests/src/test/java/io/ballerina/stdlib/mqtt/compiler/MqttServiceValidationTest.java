@@ -32,6 +32,7 @@ import static io.ballerina.stdlib.mqtt.compiler.CompilerPluginTestUtils.BALLERIN
 import static io.ballerina.stdlib.mqtt.compiler.CompilerPluginTestUtils.RESOURCE_DIRECTORY;
 import static io.ballerina.stdlib.mqtt.compiler.CompilerPluginTestUtils.getEnvironmentBuilder;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.FUNCTION_SHOULD_BE_REMOTE;
+import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_ANNOTATION;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_CALLER_PARAMETER;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_MESSAGE_PARAMETER;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_MULTIPLE_LISTENERS;
@@ -264,5 +265,15 @@ public class MqttServiceValidationTest {
             Diagnostic diagnostic = (Diagnostic) obj;
             assertDiagnostic(diagnostic, INVALID_RESOURCE_FUNCTION);
         }
+    }
+
+    @Test(enabled = true, description = "Validate resource functions with onError")
+    public void testInvalidService15() {
+        Package currentPackage = loadPackage("invalid_service_15");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errors().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.errors().toArray()[0];
+        assertDiagnostic(diagnostic, INVALID_ANNOTATION);
     }
 }

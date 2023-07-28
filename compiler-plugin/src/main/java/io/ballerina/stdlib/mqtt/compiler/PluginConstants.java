@@ -46,8 +46,7 @@ public class PluginConstants {
      * Compilation errors.
      */
     public enum CompilationErrors {
-        NO_ON_MESSAGE("Service must have remote method onMessage.",
-                "MQTT_101"),
+        NO_ON_MESSAGE("Service must have remote method onMessage.", "MQTT_101"),
         INVALID_REMOTE_FUNCTION("Invalid remote method.", "MQTT_102"),
         INVALID_RESOURCE_FUNCTION("Resource functions not allowed.", "MQTT_103"),
         FUNCTION_SHOULD_BE_REMOTE("Method must have the remote qualifier.", "MQTT_104"),
