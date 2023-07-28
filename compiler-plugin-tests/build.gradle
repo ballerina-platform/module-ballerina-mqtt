@@ -115,4 +115,5 @@ jacocoTestReport {
 }
 
 test.dependsOn ":mqtt-ballerina:build"
+test.finalizedBy jacocoTestReport
 jacocoTestReport.dependsOn test
