@@ -27,7 +27,9 @@ import io.ballerina.projects.plugins.CompilerPluginContext;
 public class MqttCompilerPlugin extends CompilerPlugin {
 
     @Override
-    public void init(CompilerPluginContext context) {
-        context.addCodeAnalyzer(new MqttServiceAnalyzer());
+    public void init(CompilerPluginContext compilerPluginContext) {
+        compilerPluginContext.addCodeAnalyzer(new MqttServiceAnalyzer());
+        compilerPluginContext.addCodeAction(new MqttCodeTemplateWithCallerParameter());
+        compilerPluginContext.addCodeAction(new MqttCodeTemplateWithoutCallerParameter());
     }
 }
