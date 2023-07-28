@@ -97,7 +97,7 @@ public class MqttFunctionValidator {
 
     private void validateOnMessageFunction() {
         if (!PluginUtils.isRemoteFunction(context, onMessage)) {
-            reportErrorDiagnostic(FUNCTION_SHOULD_BE_REMOTE, onMessage.functionSignature().location());
+            reportErrorDiagnostic(FUNCTION_SHOULD_BE_REMOTE, onMessage.location());
         }
         validateOnMessageParameters(onMessage);
         validateReturnTypeErrorOrNil(onMessage);
@@ -105,7 +105,7 @@ public class MqttFunctionValidator {
 
     private void validateOnError() {
         if (!PluginUtils.isRemoteFunction(context, onError)) {
-            reportErrorDiagnostic(FUNCTION_SHOULD_BE_REMOTE, onError.functionSignature().location());
+            reportErrorDiagnostic(FUNCTION_SHOULD_BE_REMOTE, onError.location());
         }
         validateOnErrorParameters(onError);
         validateReturnTypeErrorOrNil(onError);
