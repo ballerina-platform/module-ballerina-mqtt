@@ -1,0 +1,11 @@
+[
+  {
+    "name": "org.eclipse.paho.mqttv5.client.logging.JSR47Logger",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  }
+]
