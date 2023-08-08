@@ -25,4 +25,8 @@
         <Class name="io.ballerina.stdlib.mqtt.listener.BServiceInvokeCallbackImpl" />
         <Bug pattern="DM_EXIT" />
     </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.mqtt.listener.MqttCallbackImpl" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
 </FindBugsFilter>
