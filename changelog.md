@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- [Add compiler plugin and codeactions](https://github.com/ballerina-platform/ballerina-standard-library/issues/4687)
 - [Added support for native image builds](https://github.com/ballerina-platform/ballerina-standard-library/issues/4686)
 
 ## [0.0.1] - 2023-07-24
