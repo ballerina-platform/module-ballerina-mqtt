@@ -18,11 +18,15 @@
 
 package io.ballerina.stdlib.mqtt.caller;
 
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.stdlib.mqtt.utils.MqttConstants;
 import io.ballerina.stdlib.mqtt.utils.MqttUtils;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+
+import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 
 /**
  * Class containing the external methods of the caller.
@@ -35,6 +39,25 @@ public class CallerActions {
         int qos = (int) callerObject.getNativeData(MqttConstants.QOS);
         try {
             subscriber.messageArrivedComplete(messageId, qos);
+        } catch (MqttException e) {
+            return MqttUtils.createMqttError(e);
+        }
+        return null;
+    }
+
+    public static Object respond(BObject callerObject, BMap message) {
+        MqttClient subscriber = (MqttClient) callerObject.getNativeData(MqttConstants.SUBSCRIBER);
+        byte[] correlationData = (byte[]) callerObject.getNativeData(MqttConstants.CORRELATION_DATA);
+        String responseTopic = (String) callerObject.getNativeData(MqttConstants.RESPONSE_TOPIC);
+        MqttMessage mqttMessage = generateMqttMessage(message);
+        if (responseTopic == null) {
+            return MqttUtils.createMqttError(new Exception("Response topic is not set"));
+        }
+        if (correlationData != null) {
+            mqttMessage.getProperties().setCorrelationData(correlationData);
+        }
+        try {
+            subscriber.publish(responseTopic, mqttMessage);
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }

@@ -29,6 +29,8 @@ import io.ballerina.stdlib.crypto.nativeimpl.Decode;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
@@ -75,6 +77,53 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.USERNAME;
  * Class containing the utility functions related to the clients.
  */
 public class MqttUtils {
+
+    public static BMap<BString, Object> getBMqttMessage(MqttMessage message, String topic) {
+        BMap<BString, Object> bMessage = ValueCreator.createRecordValue(ModuleUtils.getModule(),
+                MqttConstants.RECORD_MESSAGE);
+        bMessage.put(StringUtils.fromString(MqttConstants.PAYLOAD),
+                ValueCreator.createArrayValue(message.getPayload()));
+        bMessage.put(StringUtils.fromString(MqttConstants.MESSAGE_ID), message.getId());
+        bMessage.put(StringUtils.fromString(MqttConstants.QOS), message.getQos());
+        bMessage.put(StringUtils.fromString(MqttConstants.RETAINED), message.isRetained());
+        bMessage.put(StringUtils.fromString(MqttConstants.DUPLICATE), message.isDuplicate());
+        bMessage.put(MqttConstants.TOPIC, StringUtils.fromString(topic));
+        MqttProperties properties = message.getProperties();
+        if (properties != null) {
+            BMap<BString, Object> bMessageProperties = ValueCreator.createRecordValue(ModuleUtils.getModule(),
+                    MqttConstants.RECORD_MESSAGE_PROPERTIES);
+            if (properties.getResponseTopic() != null) {
+                bMessageProperties.put(StringUtils.fromString("responseTopic"),
+                        StringUtils.fromString(message.getProperties().getResponseTopic()));
+            }
+            if (properties.getCorrelationData() != null) {
+                bMessageProperties.put(StringUtils.fromString("correlationData"), ValueCreator.createArrayValue(
+                        message.getProperties().getCorrelationData()));
+            }
+        }
+        return bMessage;
+    }
+
+    public static MqttMessage generateMqttMessage(BMap message) {
+        MqttProperties properties = new MqttProperties();
+        BMap bMessageProperties = message.getMapValue(MqttConstants.MESSAGE_PROPERTIES);
+        if (Objects.nonNull(bMessageProperties)) {
+            if (bMessageProperties.containsKey(StringUtils.fromString("correlationData"))) {
+                properties.setCorrelationData(bMessageProperties.getArrayValue(StringUtils.fromString("correlationData"))
+                        .getByteArray());
+            }
+            if (bMessageProperties.containsKey(StringUtils.fromString("responseTopic"))) {
+                properties.setResponseTopic(bMessageProperties.getStringValue(StringUtils.fromString("responseTopic")).getValue());
+            }
+
+        }
+        MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setPayload(((BArray) message.get(StringUtils.fromString(MqttConstants.PAYLOAD))).getByteArray());
+        mqttMessage.setQos(((Long) message.get(StringUtils.fromString(MqttConstants.QOS))).intValue());
+        mqttMessage.setRetained(((boolean) message.get(StringUtils.fromString(MqttConstants.RETAINED))));
+        mqttMessage.setProperties(properties);
+        return mqttMessage;
+    }
 
     public static MqttConnectionOptions getMqttConnectOptions(BMap<BString, Object> configuration) {
         MqttConnectionOptions options = new MqttConnectionOptions();

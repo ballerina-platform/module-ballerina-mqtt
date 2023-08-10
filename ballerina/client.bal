@@ -38,6 +38,24 @@ public client isolated class Client {
         check self.externPublish(topic, message);
     }
 
+    # Publishes a message to a topic.
+    #
+    # + subscriptions - parameter description
+    # + return - `mqtt:Error` if an error occurs while publishing
+    isolated remote function subscribe(string|string[]|Subscription|Subscription[] subscriptions) returns Error? {
+        check self.externSubscribe(processSubscriptions(subscriptions));
+    }
+
+    # Receives messages from the server.
+    # 
+    # + T - Type of the stream to return
+    # + return - `mqtt:Error` if an error occurs while reconnecting
+    isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|Error  =
+    @java:Method {
+        name: "externReceive",
+        'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+    } external;
+
     # Closes the connection to the server.
     # + return - `mqtt:Error` if an error occurs while closing
     isolated remote function close() returns Error? {
@@ -71,6 +89,11 @@ public client isolated class Client {
     @java:Method {
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
     } external;
+
+   private isolated function externSubscribe(Subscription[] subscriptions) returns Error? =
+   @java:Method {
+       'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+   } external;
 
     private isolated function externClose() returns Error? =
     @java:Method {

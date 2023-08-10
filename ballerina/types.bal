@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/crypto;
+import ballerina/jballerina.java;
 
 # An MQTT message holds the application payload and other metadata.
 #
@@ -23,12 +24,25 @@ import ballerina/crypto;
 # + retained - Indicates whether this message should/is retained by the server
 # + duplicate - Indicates whether or not this message might be a duplicate
 # + messageId - The message ID of the message. This is only set on messages received from the server
+# + topic - The topic this message was received on. This is only set on messages received from the server  
+# + properties - field description
 public type Message record {|
     byte[] payload;
     int qos = 1;
     boolean retained = false;
     boolean duplicate = false;
     int messageId?;
+    string topic?;
+    MessageProperties properties?;
+|};
+
+# Description.
+#
+# + responseTopic - field description  
+# + correlationData - field description
+public type MessageProperties record {|
+    string responseTopic?;
+    byte[] correlationData?;
 |};
 
 # The configurations related to the client initialization.
@@ -81,15 +95,11 @@ public type ConnectionConfiguration record {|
 
 # The mechanism for tracking the delivery of a message
 #
-# + message - Message associated with this token
-# + grantedQos - The granted QoS list from a suback
-# + messageId - Message ID of the message that is associated with the token
-# + topics - Topic string(s) for the subscribe being tracked by this token
+# + messageId - Message ID of the message that was delivered
+# + topic - Topic for the message that was delivered
 public type DeliveryToken record {|
-    Message message;
-    int[] grantedQos;
     int messageId;
-    string[] topics;
+    string topic;
 |};
 
 # Configurations for secure communication with the MQTT server.
@@ -122,6 +132,42 @@ public enum Protocol {
     SSL,
     TLS
 }
+
+# The stream iterator object that is used to iterate through the stream messages.
+#
+class StreamIterator {
+    private boolean isClosed = false;
+
+    public isolated function next() returns record{|Message value;|}|error? {
+        if self.isClosed {
+            return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+        }
+        Message|error? result = nextResult(self);
+        if result is Message {
+            return {value: result};
+        }
+        return result;
+    }
+
+    public isolated function close() returns error? {
+        if !self.isClosed {
+            self.isClosed = true;
+            return closeStream(self);
+        } else {
+            return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+        }
+    }
+}
+
+isolated function nextResult(StreamIterator iterator) returns Message|error? =
+@java:Method {
+    'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+} external;
+
+isolated function closeStream(StreamIterator iterator) returns error? =
+@java:Method {
+    'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+} external;
 
 # The MQTT service type.
 public type Service distinct service object {};

@@ -28,27 +28,7 @@ public isolated client class Listener {
     # + subscriptions - The topics to be subscribed to
     # + return - `mqtt:Error` if an error occurs while creating the listener
     public isolated function init(string serverUri, string clientId, string|string[]|Subscription|Subscription[] subscriptions, *ListenerConfiguration config) returns Error? {
-        if subscriptions is Subscription {
-            self.mqttSubscriptions = [subscriptions.cloneReadOnly()];
-        } else if subscriptions is string {
-            self.mqttSubscriptions = [{
-                topic: subscriptions,
-                qos: 1
-            }];
-        } else if subscriptions is string[] {
-            Subscription[] mqttSubscriptions = [];
-            foreach string topic in subscriptions {
-                mqttSubscriptions.push({
-                    topic: topic,
-                    qos: 1
-                });
-            }
-            self.mqttSubscriptions = mqttSubscriptions.cloneReadOnly();
-        } else if subscriptions is Subscription[] {
-            self.mqttSubscriptions = subscriptions.cloneReadOnly();
-        } else {
-            panic error("Invalid topics provided");
-        }
+        self.mqttSubscriptions = processSubscriptions(subscriptions).cloneReadOnly();
         check self.externInit(serverUri, clientId, config);
     }
 

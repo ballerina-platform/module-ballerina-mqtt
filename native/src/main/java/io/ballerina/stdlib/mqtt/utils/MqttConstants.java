@@ -50,7 +50,7 @@ public class MqttConstants {
 
     public static final String ERROR_NAME = "Error";
 
-    public static final String CLIENT_OBJECT = "clientObject";
+    public static final String MQTT_CLIENT = "mqttClient";
     public static final String SUBSCRIBER = "subscriber";
     public static final String MESSAGE_ID = "messageId";
     public static final String QOS = "qos";
@@ -61,7 +61,11 @@ public class MqttConstants {
     public static final String SERVICE = "service";
     public static final String CALLER = "Caller";
     public static final String RECORD_MESSAGE = "Message";
+    public static final String RECORD_MESSAGE_PROPERTIES = "MessageProperties";
     public static final String RECORD_DELIVERY_TOKEN = "DeliveryToken";
+    public static final String RESPONSE_TOPIC = "responseTopic";
+    public static final String CORRELATION_DATA = "correlationData";
+    public static final BString MESSAGE_PROPERTIES = StringUtils.fromString("properties");
     
     public static final String ONCOMPLETE = "onComplete";
     public static final String ONMESSAGE = "onMessage";
