@@ -90,5 +90,4 @@ release {
 
 task build {
     dependsOn(':mqtt-ballerina:build')
-    dependsOn(':mqtt-native:build')
 }

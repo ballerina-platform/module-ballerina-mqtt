@@ -23,10 +23,14 @@ plugins {
 include ':checkstyle'
 include ':mqtt-ballerina'
 include ':mqtt-native'
+include ':mqtt-compiler-plugin'
+include ':mqtt-compiler-plugin-tests'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
 project(':mqtt-ballerina').projectDir = file('ballerina')
 project(':mqtt-native').projectDir = file('native')
+project(':mqtt-compiler-plugin').projectDir = file('compiler-plugin')
+project(':mqtt-compiler-plugin-tests').projectDir = file('compiler-plugin-tests')
 
 gradleEnterprise {
     buildScan {
