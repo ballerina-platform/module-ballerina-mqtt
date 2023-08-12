@@ -86,8 +86,8 @@ public class ClientActions {
                     BMap<BString, Object> bMqttToken = getMqttDeliveryToken(token);
                     try {
                         deliveryTokenQueue.put(bMqttToken);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    } catch (InterruptedException exception) {
+                        exception.printStackTrace();
                     }
                 }
                 @Override
@@ -125,7 +125,8 @@ public class ClientActions {
         try {
             Future future = env.markAsync();
             publisher.publish(topic.getValue(), mqttMessage);
-            LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject.getNativeData("deliveryTokenQueue");
+            LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject
+                    .getNativeData("deliveryTokenQueue");
             ExecutorService executor = (ExecutorService) clientObject.getNativeData("executorService");
             executor.submit(() -> {
                 try {
