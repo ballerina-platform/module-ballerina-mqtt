@@ -26,7 +26,6 @@ import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
-import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -47,9 +46,8 @@ import java.util.concurrent.TimeUnit;
 
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MESSAGE_ID;
-import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RECORD_DELIVERY_TOKEN;
-import static io.ballerina.stdlib.mqtt.utils.MqttConstants.TOPIC;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getBMqttMessage;
+import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getMqttDeliveryToken;
 
 /**
  * Class containing the callback of Mqtt subscriber.
@@ -150,13 +148,7 @@ public class MqttCallbackImpl implements MqttCallback {
             return;
         }
         BMap<BString, Object> bMqttToken;
-        try {
-            bMqttToken = getMqttDeliveryToken(token);
-        } catch (Exception e) {
-            BError bError = MqttUtils.createMqttError(e);
-            invokeOnError(bError);
-            return;
-        }
+        bMqttToken = getMqttDeliveryToken(token);
         StrandMetadata metadata = getStrandMetadata(MqttConstants.ONCOMPLETE);
         CountDownLatch latch = new CountDownLatch(1);
         runtime.invokeMethodAsyncSequentially(service, MqttConstants.ONCOMPLETE, null, metadata,
@@ -166,13 +158,6 @@ public class MqttCallbackImpl implements MqttCallback {
         } catch (InterruptedException exception) {
             exception.printStackTrace();
         }
-    }
-
-    private BMap<BString, Object> getMqttDeliveryToken(IMqttToken token) {
-        BMap<BString, Object> bDeliveryToken = ValueCreator.createRecordValue(getModule(), RECORD_DELIVERY_TOKEN);
-        bDeliveryToken.put(StringUtils.fromString(MESSAGE_ID), token.getMessageId());
-        bDeliveryToken.put(TOPIC, StringUtils.fromString(token.getTopics()[0]));
-        return bDeliveryToken;
     }
 
     private boolean isMethodImplemented(String methodName) {

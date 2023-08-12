@@ -27,6 +27,7 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.crypto.nativeimpl.Decode;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -64,13 +65,16 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_STORE_PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_STORE_PATH;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MAX_RECONNECT_DELAY;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MESSAGE_ID;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.NATIVE_DATA_PRIVATE_KEY;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.NATIVE_DATA_PUBLIC_KEY_CERTIFICATE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PROTOCOL_NAME;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PROTOCOL_VERSION;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RECORD_DELIVERY_TOKEN;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.SECURE_SOCKET;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.SERVER_URIS;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.TOPIC;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.USERNAME;
 
 /**
@@ -109,11 +113,12 @@ public class MqttUtils {
         BMap bMessageProperties = message.getMapValue(MqttConstants.MESSAGE_PROPERTIES);
         if (Objects.nonNull(bMessageProperties)) {
             if (bMessageProperties.containsKey(StringUtils.fromString("correlationData"))) {
-                properties.setCorrelationData(bMessageProperties.getArrayValue(StringUtils.fromString("correlationData"))
-                        .getByteArray());
+                properties.setCorrelationData(bMessageProperties.getArrayValue(
+                        StringUtils.fromString("correlationData")).getByteArray());
             }
             if (bMessageProperties.containsKey(StringUtils.fromString("responseTopic"))) {
-                properties.setResponseTopic(bMessageProperties.getStringValue(StringUtils.fromString("responseTopic")).getValue());
+                properties.setResponseTopic(bMessageProperties.getStringValue(StringUtils
+                        .fromString("responseTopic")).getValue());
             }
 
         }
@@ -123,6 +128,13 @@ public class MqttUtils {
         mqttMessage.setRetained(((boolean) message.get(StringUtils.fromString(MqttConstants.RETAINED))));
         mqttMessage.setProperties(properties);
         return mqttMessage;
+    }
+
+    public static BMap<BString, Object> getMqttDeliveryToken(IMqttToken token) {
+        BMap<BString, Object> bDeliveryToken = ValueCreator.createRecordValue(getModule(), RECORD_DELIVERY_TOKEN);
+        bDeliveryToken.put(StringUtils.fromString(MESSAGE_ID), token.getMessageId());
+        bDeliveryToken.put(TOPIC, StringUtils.fromString(token.getTopics()[0]));
+        return bDeliveryToken;
     }
 
     public static MqttConnectionOptions getMqttConnectOptions(BMap<BString, Object> configuration) {

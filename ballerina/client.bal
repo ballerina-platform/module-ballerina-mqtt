@@ -34,8 +34,8 @@ public client isolated class Client {
     # + topic - Topic to publish the message to
     # + message - Message to publish
     # + return - `mqtt:Error` if an error occurs while publishing
-    isolated remote function publish(string topic, Message message) returns Error? {
-        check self.externPublish(topic, message);
+    isolated remote function publish(string topic, Message message) returns DeliveryToken|Error {
+        return self.externPublish(topic, message);
     }
 
     # Publishes a message to a topic.
@@ -50,7 +50,7 @@ public client isolated class Client {
     # 
     # + T - Type of the stream to return
     # + return - `mqtt:Error` if an error occurs while reconnecting
-    isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|Error  =
+    isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|Error =
     @java:Method {
         name: "externReceive",
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
@@ -85,7 +85,7 @@ public client isolated class Client {
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
     } external;
 
-    private isolated function externPublish(string topic, Message message) returns Error? =
+    private isolated function externPublish(string topic, Message message) returns DeliveryToken|Error =
     @java:Method {
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
     } external;

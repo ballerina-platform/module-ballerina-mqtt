@@ -51,6 +51,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getBMqttMessage;
+import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getMqttDeliveryToken;
 
 /**
  * Class containing the external methods of the publisher.
@@ -65,8 +66,10 @@ public class ClientActions {
             publisher.connect(options);
             clientObject.addNativeData(MqttConstants.MQTT_CLIENT, publisher);
             LinkedBlockingQueue blockingQueue = new LinkedBlockingQueue<>();
+            LinkedBlockingQueue deliveryTokenQueue = new LinkedBlockingQueue<>();
             ExecutorService executor = Executors.newCachedThreadPool();
             clientObject.addNativeData("blockingQueue", blockingQueue);
+            clientObject.addNativeData("deliveryTokenQueue", deliveryTokenQueue);
             clientObject.addNativeData("executorService", executor);
             publisher.setCallback(new MqttCallback() {
                 @Override
@@ -79,7 +82,14 @@ public class ClientActions {
                     blockingQueue.put(bMqttMessage);
                 }
                 @Override
-                public void deliveryComplete(IMqttToken token) {}
+                public void deliveryComplete(IMqttToken token) {
+                    BMap<BString, Object> bMqttToken = getMqttDeliveryToken(token);
+                    try {
+                        deliveryTokenQueue.put(bMqttToken);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
                 @Override
                 public void connectComplete(boolean reconnect, String serverURI) {}
                 @Override
@@ -109,11 +119,22 @@ public class ClientActions {
         return null;
     }
 
-    public static Object externPublish(BObject clientObject, BString topic, BMap message) {
+    public static Object externPublish(Environment env, BObject clientObject, BString topic, BMap message) {
         MqttClient publisher = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         MqttMessage mqttMessage = generateMqttMessage(message);
         try {
+            Future future = env.markAsync();
             publisher.publish(topic.getValue(), mqttMessage);
+            LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject.getNativeData("deliveryTokenQueue");
+            ExecutorService executor = (ExecutorService) clientObject.getNativeData("executorService");
+            executor.submit(() -> {
+                try {
+                    future.complete(deliveryTokenQueue.take());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    future.complete(MqttUtils.createMqttError(e));
+                }
+            });
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }
