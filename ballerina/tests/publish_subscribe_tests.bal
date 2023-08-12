@@ -44,7 +44,7 @@ function basicPublishSubscribeTest() returns error? {
 
     Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
     string message = "Test message for basic pub sub test";
-    check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -62,7 +62,7 @@ function basicPublishSubscribeWithAuthTest() returns error? {
 
     Client 'client = check new (AUTH_ONLY_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authConnConfig});
     string message = "Test message for basic pub sub with auth test";
-    check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -78,7 +78,7 @@ function basicPublishSubscribeWithTLSTest() returns error? {
 
     Client 'client = check new (NO_AUTH_ENCRYPTED_ENDPOINT, uuid:createType1AsString(), {connectionConfig: tlsConnConfig});
     string message = "Test message for basic pub sub with tls test";
-    check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -94,7 +94,7 @@ function basicPublishSubscribeWithMTLSTest() returns error? {
 
     Client 'client = check new (NO_AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: mtlsConnConfig});
     string message = "Test message for basic pub sub with mtls test";
-    check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -110,7 +110,7 @@ function basicPublishSubscribeWithAuthAndMTLSTest() returns error? {
 
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
     string message = "Test message for basic pub sub with auth and mtls test";
-    check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -127,8 +127,8 @@ function subscribeToMultipleTopicsTest() returns error? {
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
     string message1 = "Test message for topic 1";
     string message2 = "Test message for topic 1";
-    check 'client->publish("mqtt/topic1", {payload: message1.toBytes()});
-    check 'client->publish("mqtt/topic2", {payload: message1.toBytes()});
+    _ = check 'client->publish("mqtt/topic1", {payload: message1.toBytes()});
+    _ = check 'client->publish("mqtt/topic2", {payload: message1.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -145,7 +145,7 @@ function subscribeToSubscriptionTest() returns error? {
 
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
     string message = "Test message for subscription";
-    check 'client->publish("mqtt/subscriptiontopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/subscriptiontopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -162,8 +162,8 @@ function subscribeToMultipleSubscriptionsTest() returns error? {
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
     string message1 = "Test message for subscription1";
     string message2 = "Test message for subscription2";
-    check 'client->publish("mqtt/subscriptiontopic1", {payload: message1.toBytes()});
-    check 'client->publish("mqtt/subscriptiontopic2", {payload: message2.toBytes()});
+    _ = check 'client->publish("mqtt/subscriptiontopic1", {payload: message1.toBytes()});
+    _ = check 'client->publish("mqtt/subscriptiontopic2", {payload: message2.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -180,7 +180,7 @@ function publishSubscribeWithMTLSTrustKeyStoresTest() returns error? {
 
     Client 'client = check new (NO_AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: mtlsWithTrustKeyStoreConnConfig});
     string message = "Test message for mtls with trust and key stores";
-    check 'client->publish("mqtt/trustkeystorestopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/trustkeystorestopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -209,7 +209,7 @@ function subscribeWithManualAcks() returns error? {
 
     Client 'client = check new (NO_AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: mtlsConnConfig});
     string message = "Test message for manual acks";
-    check 'client->publish("mqtt/manualackstopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/manualackstopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -221,7 +221,7 @@ function subscribeWithManualAcks() returns error? {
 function closeWithoutDisconnectTest() returns error? {
     Client 'client = check new (NO_AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: mtlsConnConfig});
     string message = "Test message for closing without disconnect";
-    check 'client->publish("mqtt/unrelated", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/unrelated", {payload: message.toBytes()});
     Error? err = 'client->close();
     if err is Error {
         test:assertEquals(err.message(), "Client is connected");
@@ -235,7 +235,7 @@ function closeWithoutDisconnectTest() returns error? {
 function clientIsConnectedTest() returns error? {
     Client 'client = check new (NO_AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: mtlsConnConfig});
     string message = "Test message for checking if client is connected";
-    check 'client->publish("mqtt/unrelated", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/unrelated", {payload: message.toBytes()});
     boolean isConnected = check 'client->isConnected();
     test:assertTrue(isConnected);
     check 'client->disconnect();
@@ -247,7 +247,7 @@ function clientIsConnectedTest() returns error? {
 function clientReconnectTest() returns error? {
     Client 'client = check new (NO_AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: mtlsConnConfig});
     string message = "Test message for reconnecting with the server";
-    check 'client->publish("mqtt/unrelated", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/unrelated", {payload: message.toBytes()});
     boolean isConnected = check 'client->isConnected();
     test:assertTrue(isConnected);
     check 'client->disconnect();
@@ -328,12 +328,12 @@ function listenerGracefulStopTest() returns error? {
 
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
     string message = "Test message 1 for graceful stop";
-    check 'client->publish("mqtt/gracefulstoptopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/gracefulstoptopic", {payload: message.toBytes()});
     runtime:sleep(1);
     test:assertTrue(receivedMessages.indexOf(message) != ());
     check 'listener.gracefulStop();
     message = "Test message 2 for graceful stop";
-    check 'client->publish("mqtt/gracefulstoptopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/gracefulstoptopic", {payload: message.toBytes()});
     test:assertTrue(receivedMessages.indexOf(message) == ());
     check stopListenerAndClient('client = 'client);
 }
@@ -346,12 +346,12 @@ function listenerImmediateStopTest() returns error? {
 
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
     string message = "Test message 1 for immediate stop";
-    check 'client->publish("mqtt/immediatestoptopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/immediatestoptopic", {payload: message.toBytes()});
     runtime:sleep(1);
     test:assertTrue(receivedMessages.indexOf(message) != ());
     check 'listener.immediateStop();
     message = "Test message 2 for immediate stop";
-    check 'client->publish("mqtt/immediatestoptopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/immediatestoptopic", {payload: message.toBytes()});
     test:assertTrue(receivedMessages.indexOf(message) == ());
     check stopListenerAndClient('client = 'client);
 }
@@ -364,12 +364,12 @@ function listenerDetachTest() returns error? {
 
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
     string message = "Test message 1 for detach";
-    check 'client->publish("mqtt/detachtopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/detachtopic", {payload: message.toBytes()});
     runtime:sleep(1);
     test:assertTrue(receivedMessages.indexOf(message) != ());
     check 'listener.detach(basicService);
     message = "Test message 2 for detach";
-    check 'client->publish("mqtt/detachtopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/detachtopic", {payload: message.toBytes()});
     test:assertTrue(receivedMessages.indexOf(message) == ());
     check stopListenerAndClient('client = 'client);
 }
@@ -389,7 +389,7 @@ function serviceWithoutOnMessageTest() returns error? {
 
     Client 'client = check new (NO_AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: mtlsConnConfig});
     string message = "Test message for service without onmessage method";
-    check 'client->publish("mqtt/noonmessagetopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/noonmessagetopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
@@ -442,7 +442,7 @@ function clientListenerConfigTest() returns error? {
         }
     });
     string message = "Test message for service with all connection configs";
-    check 'client->publish("mqtt/allconnconfigtopic", {payload: message.toBytes()});
+    _ = check 'client->publish("mqtt/allconnconfigtopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
     check stopListenerAndClient('listener, 'client);
