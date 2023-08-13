@@ -104,6 +104,7 @@ public class MqttUtils {
                 bMessageProperties.put(StringUtils.fromString("correlationData"), ValueCreator.createArrayValue(
                         message.getProperties().getCorrelationData()));
             }
+            bMessage.put(StringUtils.fromString("properties"), bMessageProperties);
         }
         return bMessage;
     }

@@ -164,6 +164,32 @@ function requestResponseAsynchronousTest() returns error? {
 }
 
 @test:Config {enable: true}
+function requestResponseWithCorrelationDataTest() returns error? {
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/correlationdatareqrestest");
+    check 'listener.attach(reqResService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    addListenerAndClientToArray('listener, 'client);
+    string message = "Test message for async req res test";
+    check 'client->subscribe("mqtt/response/correlationdatareqrestest");
+    _ = check 'client->publish("mqtt/request/correlationdatareqrestest", {payload: (message + " 1").toBytes(), properties: {responseTopic: "mqtt/response/correlationdatareqrestest", correlationData: "cdata1".toBytes()}});
+    _ = check 'client->publish("mqtt/request/correlationdatareqrestest", {payload: (message + " 2").toBytes(), properties: {responseTopic: "mqtt/response/correlationdatareqrestest", correlationData: "cdata2".toBytes()}});
+    _ = check 'client->publish("mqtt/request/correlationdatareqrestest", {payload: (message + " 3").toBytes(), properties: {responseTopic: "mqtt/response/correlationdatareqrestest", correlationData: "cdata3".toBytes()}});
+
+    stream<Message, error?> respStream = check 'client->receiveResponse();
+    record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
+    test:assertEquals(val.value.payload, "Response for Test message for async req res test 1".toBytes());
+    test:assertEquals(val.value.properties?.correlationData, "cdata1".toBytes());
+    val = <record {|Message value;|}>check respStream.next();
+    test:assertEquals(val.value.payload, "Response for Test message for async req res test 2".toBytes());
+    test:assertEquals(val.value.properties?.correlationData, "cdata2".toBytes());
+    val = <record {|Message value;|}>check respStream.next();
+    test:assertEquals(val.value.payload, "Response for Test message for async req res test 3".toBytes());
+    test:assertEquals(val.value.properties?.correlationData, "cdata3".toBytes());
+}
+
+@test:Config {enable: true}
 function sendResponseToNilTopicTest() returns error? {
     Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/nilrestoptest");
     check 'listener.attach(reqResService);
