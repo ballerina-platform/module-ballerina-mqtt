@@ -46,8 +46,7 @@ function basicPublishSubscribeTest() returns error? {
     string message = "Test message for basic pub sub test";
     _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
-
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     lock {
         test:assertTrue(receivedMessages.indexOf(message) != ());
@@ -65,7 +64,7 @@ function basicPublishSubscribeWithAuthTest() returns error? {
     _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
@@ -81,7 +80,7 @@ function basicPublishSubscribeWithTLSTest() returns error? {
     _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
@@ -97,7 +96,7 @@ function basicPublishSubscribeWithMTLSTest() returns error? {
     _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
@@ -113,7 +112,7 @@ function basicPublishSubscribeWithAuthAndMTLSTest() returns error? {
     _ = check 'client->publish("mqtt/basictest", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
@@ -131,7 +130,7 @@ function subscribeToMultipleTopicsTest() returns error? {
     _ = check 'client->publish("mqtt/topic2", {payload: message1.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message1) != ());
     test:assertTrue(receivedMessages.indexOf(message2) != ());
@@ -148,7 +147,7 @@ function subscribeToSubscriptionTest() returns error? {
     _ = check 'client->publish("mqtt/subscriptiontopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
@@ -166,7 +165,7 @@ function subscribeToMultipleSubscriptionsTest() returns error? {
     _ = check 'client->publish("mqtt/subscriptiontopic2", {payload: message2.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message1) != ());
     test:assertTrue(receivedMessages.indexOf(message2) != ());
@@ -183,7 +182,7 @@ function publishSubscribeWithMTLSTrustKeyStoresTest() returns error? {
     _ = check 'client->publish("mqtt/trustkeystorestopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
@@ -212,7 +211,7 @@ function subscribeWithManualAcks() returns error? {
     _ = check 'client->publish("mqtt/manualackstopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
@@ -257,7 +256,7 @@ function clientReconnectTest() returns error? {
     runtime:sleep(10);
     isConnected = check 'client->isConnected();
     test:assertTrue(isConnected);
-    check stopListenerAndClient('client = 'client);
+    addListenerAndClientToArray((), 'client);
 }
 
 @test:Config {enable: true}
@@ -335,7 +334,7 @@ function listenerGracefulStopTest() returns error? {
     message = "Test message 2 for graceful stop";
     _ = check 'client->publish("mqtt/gracefulstoptopic", {payload: message.toBytes()});
     test:assertTrue(receivedMessages.indexOf(message) == ());
-    check stopListenerAndClient('client = 'client);
+    addListenerAndClientToArray('client = 'client);
 }
 
 @test:Config {enable: true}
@@ -353,7 +352,7 @@ function listenerImmediateStopTest() returns error? {
     message = "Test message 2 for immediate stop";
     _ = check 'client->publish("mqtt/immediatestoptopic", {payload: message.toBytes()});
     test:assertTrue(receivedMessages.indexOf(message) == ());
-    check stopListenerAndClient('client = 'client);
+    addListenerAndClientToArray('client = 'client);
 }
 
 @test:Config {enable: true}
@@ -371,7 +370,7 @@ function listenerDetachTest() returns error? {
     message = "Test message 2 for detach";
     _ = check 'client->publish("mqtt/detachtopic", {payload: message.toBytes()});
     test:assertTrue(receivedMessages.indexOf(message) == ());
-    check stopListenerAndClient('client = 'client);
+    addListenerAndClientToArray('client = 'client);
 }
 
 @test:Config {enable: true}
@@ -392,7 +391,7 @@ function serviceWithoutOnMessageTest() returns error? {
     _ = check 'client->publish("mqtt/noonmessagetopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertEquals(errorMessage, "method onMessage not found");
 }
@@ -445,7 +444,7 @@ function clientListenerConfigTest() returns error? {
     _ = check 'client->publish("mqtt/allconnconfigtopic", {payload: message.toBytes()});
     runtime:sleep(1);
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }

@@ -61,7 +61,7 @@ function basicRequestResponseTest() returns error? {
     test:assertEquals("Response for Test message for basic req res test", check string:fromBytes(val.value.payload));
     test:assertTrue(completedTokens.indexOf(<string>val.value.topic) != ());
 
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
 }
 
 @test:Config {enable: true}
@@ -90,9 +90,9 @@ function basicRequestResponseMultipleListenersTest() returns error? {
     val = <record {|Message value;|}>check respStream.next();
     test:assertEquals("Response for Test message for req with multiple res test", check string:fromBytes(val.value.payload));
 
-    check stopListenerAndClient('listener1);
-    check stopListenerAndClient('listener2);
-    check stopListenerAndClient('listener3);
+    addListenerAndClientToArray('listener1);
+    addListenerAndClientToArray('listener2);
+    addListenerAndClientToArray('listener3);
 }
 
 @test:Config {enable: true}
@@ -123,9 +123,9 @@ function basicRequestResponseMultiplePublishersTest() returns error? {
     stream<Message, error?> respStream3 = check 'client3->receiveResponse();
     record {|Message value;|} val3 = <record {|Message value;|}>check respStream3.next();
 
-    check stopListenerAndClient('listener, 'client1);
-    check stopListenerAndClient((), client2);
-    check stopListenerAndClient((), 'client3);
+    addListenerAndClientToArray('listener, 'client1);
+    addListenerAndClientToArray((), client2);
+    addListenerAndClientToArray((), 'client3);
 
     test:assertEquals(check string:fromBytes(val1.value.payload), "Response for Test message for multiple req res test");
     test:assertEquals(val1.value.topic, "mqtt/response/multiplereqrestest/1");
@@ -154,7 +154,7 @@ function requestResponseAsynchronousTest() returns error? {
     future<error?> f = start readResponse(respStream, receivedValues);
     runtime:sleep(1);
     f.cancel();
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
     test:assertEquals(receivedValues, [
         "Response for Test message for async req res test",
         "Response for Test message for async req res test",
@@ -162,7 +162,6 @@ function requestResponseAsynchronousTest() returns error? {
         "Response for Test message for async req res test"
     ]);
 }
-
 
 @test:Config {enable: true}
 function sendResponseToNilTopicTest() returns error? {
@@ -174,8 +173,58 @@ function sendResponseToNilTopicTest() returns error? {
     string message = "Test message for nil response topic";
     _ = check 'client->publish("mqtt/request/nilrestoptest", {payload: message.toBytes()});
     runtime:sleep(1);
-    check stopListenerAndClient('listener, 'client);
+    addListenerAndClientToArray('listener, 'client);
     test:assertTrue(receivedErrors.indexOf("Response topic is not set") != ());
+}
+
+@test:Config {enable: true}
+function closeReceiveStreamTest() returns error? {
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/closereceivestreamtest");
+    check 'listener.attach(reqResService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    string message = "Test message for close receive stream topic";
+    check 'client->subscribe("mqtt/response/closereceivestreamtest");
+    _ = check 'client->publish("mqtt/request/closereceivestreamtest", {payload: message.toBytes(), properties: {responseTopic: "mqtt/response/closereceivestreamtest"}});
+    runtime:sleep(1);
+    addListenerAndClientToArray('listener, 'client);
+
+    stream<Message, error?> respStream = check 'client->receiveResponse();
+    record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
+    test:assertEquals(check string:fromBytes(val.value.payload), "Response for Test message for close receive stream topic");
+    check respStream.close();
+    record {|Message value;|}|error? response = respStream.next();
+    if response is error {
+        test:assertEquals(response.message(), "Stream is closed. Therefore, no operations are allowed further on the stream.");
+    } else {
+        test:assertFail("Expected an error");
+    }
+}
+
+@test:Config {enable: true}
+function closeClosedReceiveStreamTest() returns error? {
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/closeclosedreceivestreamtest");
+    check 'listener.attach(reqResService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    string message = "Test message for close receive stream topic";
+    check 'client->subscribe("mqtt/response/closeclosedreceivestreamtest");
+    _ = check 'client->publish("mqtt/request/closeclosedreceivestreamtest", {payload: message.toBytes(), properties: {responseTopic: "mqtt/response/closeclosedreceivestreamtest"}});
+    runtime:sleep(1);
+    addListenerAndClientToArray('listener, 'client);
+
+    stream<Message, error?> respStream = check 'client->receiveResponse();
+    record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
+    test:assertEquals(check string:fromBytes(val.value.payload), "Response for Test message for close receive stream topic");
+    check respStream.close();
+    error? response = respStream.close();
+    if response is error {
+        test:assertEquals(response.message(), "Stream is closed. Therefore, no operations are allowed further on the stream.");
+    } else {
+        test:assertFail("Expected an error");
+    }
 }
 
 function readResponse(stream<Message, error?> respStream, string[] receivedValues) returns error? {

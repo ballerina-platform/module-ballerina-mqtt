@@ -13,6 +13,7 @@
 // KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations
 // under the License.
+import ballerina/test;
 
 const NO_AUTH_ENDPOINT = "tcp://localhost:1883";
 const AUTH_ONLY_ENDPOINT = "tcp://localhost:1884";
@@ -88,12 +89,25 @@ final ConnectionConfiguration authMtlsConnConfig = {
     }
 };
 
-function stopListenerAndClient(Listener? 'listener = (), Client? 'client = ()) returns error? {
-    if 'client != () {
+final Listener[] listeners = [];
+final Client[] clients = [];
+
+function addListenerAndClientToArray(Listener? 'listener = (), Client? 'client = ()) {
+    if 'listener is Listener {
+        listeners.push('listener);
+    }
+    if 'client is Client {
+        clients.push('client);
+    }
+}
+
+@test:AfterSuite {alwaysRun: true}
+function closeAllListenersAndClients() returns error? {
+    foreach Listener 'listener in listeners {
+        check 'listener.gracefulStop();
+    }
+    foreach Client 'client in clients {
         check 'client->disconnect();
         check 'client->close();
-    }
-    if 'listener != () {
-        check 'listener.gracefulStop();
     }
 }
