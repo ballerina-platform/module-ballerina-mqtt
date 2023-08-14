@@ -54,9 +54,11 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CERT_FILE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CLEAN_START;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CONNECTION_CONFIGURATION;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CONNECTION_TIMEOUT;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CORRELATION_DATA;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CRYPTO_TRUSTSTORE_PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CRYPTO_TRUSTSTORE_PATH;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.DEFAULT_TLS_PROTOCOL;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.ERROR_DETAILS;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.ERROR_NAME;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEEP_ALIVE_INTERVAL;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY;
@@ -66,12 +68,15 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_STORE_PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_STORE_PATH;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MAX_RECONNECT_DELAY;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MESSAGE_ID;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MESSAGE_PROPERTIES;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.NATIVE_DATA_PRIVATE_KEY;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.NATIVE_DATA_PUBLIC_KEY_CERTIFICATE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PROTOCOL_NAME;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PROTOCOL_VERSION;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.REASON_CODE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RECORD_DELIVERY_TOKEN;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_TOPIC;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.SECURE_SOCKET;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.SERVER_URIS;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.TOPIC;
@@ -97,29 +102,28 @@ public class MqttUtils {
             BMap<BString, Object> bMessageProperties = ValueCreator.createRecordValue(ModuleUtils.getModule(),
                     MqttConstants.RECORD_MESSAGE_PROPERTIES);
             if (properties.getResponseTopic() != null) {
-                bMessageProperties.put(StringUtils.fromString("responseTopic"),
+                bMessageProperties.put(RESPONSE_TOPIC,
                         StringUtils.fromString(message.getProperties().getResponseTopic()));
             }
             if (properties.getCorrelationData() != null) {
-                bMessageProperties.put(StringUtils.fromString("correlationData"), ValueCreator.createArrayValue(
+                bMessageProperties.put(StringUtils.fromString(CORRELATION_DATA), ValueCreator.createArrayValue(
                         message.getProperties().getCorrelationData()));
             }
-            bMessage.put(StringUtils.fromString("properties"), bMessageProperties);
+            bMessage.put(MESSAGE_PROPERTIES, bMessageProperties);
         }
         return bMessage;
     }
 
     public static MqttMessage generateMqttMessage(BMap message) {
         MqttProperties properties = new MqttProperties();
-        BMap bMessageProperties = message.getMapValue(MqttConstants.MESSAGE_PROPERTIES);
+        BMap bMessageProperties = message.getMapValue(MESSAGE_PROPERTIES);
         if (Objects.nonNull(bMessageProperties)) {
-            if (bMessageProperties.containsKey(StringUtils.fromString("correlationData"))) {
+            if (bMessageProperties.containsKey(StringUtils.fromString(CORRELATION_DATA))) {
                 properties.setCorrelationData(bMessageProperties.getArrayValue(
-                        StringUtils.fromString("correlationData")).getByteArray());
+                        StringUtils.fromString(CORRELATION_DATA)).getByteArray());
             }
-            if (bMessageProperties.containsKey(StringUtils.fromString("responseTopic"))) {
-                properties.setResponseTopic(bMessageProperties.getStringValue(StringUtils
-                        .fromString("responseTopic")).getValue());
+            if (bMessageProperties.containsKey(RESPONSE_TOPIC)) {
+                properties.setResponseTopic(bMessageProperties.getStringValue(RESPONSE_TOPIC).getValue());
             }
 
         }
@@ -299,9 +303,9 @@ public class MqttUtils {
 
     public static BError createMqttError(Exception exception) {
         Throwable cause = exception.getCause();
-        BMap<BString, Object> errorDetailMap = ValueCreator.createRecordValue(getModule(), "ErrorDetails");
+        BMap<BString, Object> errorDetailMap = ValueCreator.createRecordValue(getModule(), ERROR_DETAILS);
         if (exception instanceof MqttException) {
-            errorDetailMap.put(StringUtils.fromString("reasonCode"), ((MqttException) exception).getReasonCode());
+            errorDetailMap.put(REASON_CODE, ((MqttException) exception).getReasonCode());
         }
         if (cause != null) {
             return ErrorCreator.createError(getModule(), ERROR_NAME, StringUtils.fromString(exception.getMessage()),

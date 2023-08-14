@@ -26,7 +26,7 @@ public isolated client class Listener {
     # + serverUri - The URI of the remote MQTT server
     # + clientId - The unique client ID to identify the listener
     # + subscriptions - The topics to be subscribed to
-    # + return - `mqtt:Error` if an error occurs while creating the listener
+    # + return - `mqtt:Error` if an error occurs while creating the listener or else `()`
     public isolated function init(string serverUri, string clientId, string|string[]|Subscription|Subscription[] subscriptions, *ListenerConfiguration config) returns Error? {
         self.mqttSubscriptions = processSubscriptions(subscriptions).cloneReadOnly();
         check self.externInit(serverUri, clientId, config);

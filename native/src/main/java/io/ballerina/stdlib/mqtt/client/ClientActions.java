@@ -49,6 +49,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.DELIVERY_TOKEN_QUEUE;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_EXECUTOR_SERVICE;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_QUEUE;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.STREAM_ITERATOR;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getBMqttMessage;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getMqttDeliveryToken;
@@ -68,9 +72,9 @@ public class ClientActions {
             LinkedBlockingQueue blockingQueue = new LinkedBlockingQueue<>();
             LinkedBlockingQueue deliveryTokenQueue = new LinkedBlockingQueue<>();
             ExecutorService executor = Executors.newCachedThreadPool();
-            clientObject.addNativeData("blockingQueue", blockingQueue);
-            clientObject.addNativeData("deliveryTokenQueue", deliveryTokenQueue);
-            clientObject.addNativeData("executorService", executor);
+            clientObject.addNativeData(RESPONSE_QUEUE, blockingQueue);
+            clientObject.addNativeData(DELIVERY_TOKEN_QUEUE, deliveryTokenQueue);
+            clientObject.addNativeData(RESPONSE_EXECUTOR_SERVICE, executor);
             publisher.setCallback(new MqttCallback() {
                 @Override
                 public void disconnected(MqttDisconnectResponse disconnectResponse) {}
@@ -126,8 +130,8 @@ public class ClientActions {
             Future future = env.markAsync();
             publisher.publish(topic.getValue(), mqttMessage);
             LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject
-                    .getNativeData("deliveryTokenQueue");
-            ExecutorService executor = (ExecutorService) clientObject.getNativeData("executorService");
+                    .getNativeData(DELIVERY_TOKEN_QUEUE);
+            ExecutorService executor = (ExecutorService) clientObject.getNativeData(RESPONSE_EXECUTOR_SERVICE);
             executor.submit(() -> {
                 try {
                     future.complete(deliveryTokenQueue.take());
@@ -143,11 +147,11 @@ public class ClientActions {
     }
 
     public static Object externReceive(BObject clientObject, BTypedesc bTypedesc) {
-        LinkedBlockingQueue blockingQueue = (LinkedBlockingQueue) clientObject.getNativeData("blockingQueue");
-        ExecutorService executor = (ExecutorService) clientObject.getNativeData("executorService");
-        BObject streamIterator = ValueCreator.createObjectValue(getModule(), "StreamIterator");
-        streamIterator.addNativeData("blockingQueue", blockingQueue);
-        streamIterator.addNativeData("executorService", executor);
+        LinkedBlockingQueue blockingQueue = (LinkedBlockingQueue) clientObject.getNativeData(RESPONSE_QUEUE);
+        ExecutorService executor = (ExecutorService) clientObject.getNativeData(RESPONSE_EXECUTOR_SERVICE);
+        BObject streamIterator = ValueCreator.createObjectValue(getModule(), STREAM_ITERATOR);
+        streamIterator.addNativeData(RESPONSE_QUEUE, blockingQueue);
+        streamIterator.addNativeData(RESPONSE_EXECUTOR_SERVICE, executor);
         StreamType streamType = (StreamType) bTypedesc.getDescribingType();
         BStream bStream = ValueCreator.createStreamValue(TypeCreator.createStreamType(
                 streamType.getConstrainedType(), streamType.getCompletionType()), streamIterator);
@@ -156,7 +160,7 @@ public class ClientActions {
 
     public static Object externClose(BObject clientObject) {
         MqttClient publisher = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
-        ExecutorService executor = (ExecutorService) clientObject.getNativeData("executorService");
+        ExecutorService executor = (ExecutorService) clientObject.getNativeData(RESPONSE_EXECUTOR_SERVICE);
         executor.shutdown();
         try {
             publisher.close();
@@ -192,8 +196,8 @@ public class ClientActions {
     }
 
     public static Object nextResult(Environment env, BObject streamIterator) {
-        BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData("blockingQueue");
-        ExecutorService executor = (ExecutorService) streamIterator.getNativeData("executorService");
+        BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData(RESPONSE_QUEUE);
+        ExecutorService executor = (ExecutorService) streamIterator.getNativeData(RESPONSE_EXECUTOR_SERVICE);
         Future future = env.markAsync();
         executor.submit(() -> {
             try {
@@ -208,11 +212,11 @@ public class ClientActions {
     }
 
     public static Object closeStream(BObject streamIterator) {
-        BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData("blockingQueue");
-        ExecutorService executor = (ExecutorService) streamIterator.getNativeData("executorService");
+        BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData(RESPONSE_QUEUE);
+        ExecutorService executor = (ExecutorService) streamIterator.getNativeData(RESPONSE_EXECUTOR_SERVICE);
         messageQueue.clear();
         executor.shutdown();
-        streamIterator.addNativeData("blockingQueue", null);
+        streamIterator.addNativeData(RESPONSE_QUEUE, null);
         return null;
     }
 }

@@ -107,7 +107,8 @@ public class MqttCallbackImpl implements MqttCallback {
             callerObject.addNativeData(MESSAGE_ID, message.getId());
             callerObject.addNativeData(MqttConstants.QOS, message.getQos());
             if (message.getProperties().getResponseTopic() != null) {
-                callerObject.addNativeData(MqttConstants.RESPONSE_TOPIC, message.getProperties().getResponseTopic());
+                callerObject.addNativeData(MqttConstants.RESPONSE_TOPIC.getValue(),
+                        message.getProperties().getResponseTopic());
             }
             if (message.getProperties().getCorrelationData() != null) {
                 callerObject.addNativeData(MqttConstants.CORRELATION_DATA,

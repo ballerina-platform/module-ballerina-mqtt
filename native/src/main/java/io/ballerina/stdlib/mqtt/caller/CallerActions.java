@@ -48,7 +48,7 @@ public class CallerActions {
     public static Object respond(BObject callerObject, BMap message) {
         MqttClient subscriber = (MqttClient) callerObject.getNativeData(MqttConstants.SUBSCRIBER);
         byte[] correlationData = (byte[]) callerObject.getNativeData(MqttConstants.CORRELATION_DATA);
-        String responseTopic = (String) callerObject.getNativeData(MqttConstants.RESPONSE_TOPIC);
+        String responseTopic = (String) callerObject.getNativeData(MqttConstants.RESPONSE_TOPIC.getValue());
         MqttMessage mqttMessage = generateMqttMessage(message);
         if (responseTopic == null) {
             return MqttUtils.createMqttError(new Exception("Response topic is not set"));

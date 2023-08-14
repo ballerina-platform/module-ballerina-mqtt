@@ -25,7 +25,7 @@ import ballerina/jballerina.java;
 # + duplicate - Indicates whether or not this message might be a duplicate
 # + messageId - The message ID of the message. This is only set on messages received from the server
 # + topic - The topic this message was received on. This is only set on messages received from the server  
-# + properties - field description
+# + properties - The properties of the message
 public type Message record {|
     byte[] payload;
     int qos = 1;
@@ -36,10 +36,10 @@ public type Message record {|
     MessageProperties properties?;
 |};
 
-# Description.
+# Properties of an MQTT message.
 #
-# + responseTopic - field description  
-# + correlationData - field description
+# + responseTopic - The topic to send the response to in reqeust response scenario
+# + correlationData - The correlation data to uniquely identify the message
 public type MessageProperties record {|
     string responseTopic?;
     byte[] correlationData?;
@@ -138,6 +138,9 @@ public enum Protocol {
 class StreamIterator {
     private boolean isClosed = false;
 
+    # Returns the next message in the stream.
+    # 
+    # + return - `record{|Message value;|}` or else `error?` if the stream is closed or any error occurred while retrieving the next message
     public isolated function next() returns record{|Message value;|}|error? {
         if self.isClosed {
             return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
@@ -149,6 +152,9 @@ class StreamIterator {
         return result;
     }
 
+    # Closes the stream.
+    # 
+    # + return - `error` if any error occurred while closing the stream or else `()`
     public isolated function close() returns error? {
         if !self.isClosed {
             self.isClosed = true;
