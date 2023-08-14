@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - [Add compiler plugin and codeactions](https://github.com/ballerina-platform/ballerina-standard-library/issues/4687)
 - [Added support for native image builds](https://github.com/ballerina-platform/ballerina-standard-library/issues/4686)
+- [Added support for request/response pattern](https://github.com/ballerina-platform/ballerina-standard-library/issues/4668)
 
 ## [0.0.1] - 2023-07-24
 ### Added
