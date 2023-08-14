@@ -5,7 +5,7 @@ version = "@toml.version@"
 authors = ["ballerina"]
 keywords = ["mqtt", "client", "messaging", "network", "pubsub", "iot"]
 repository = "https://github.com/ballerina-platform/module-ballerina-mqtt"
-distribution = "2201.7.0"
+distribution = "2201.8.0"
 
 [platform.java17]
 graalvmCompatible = true
