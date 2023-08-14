@@ -26,7 +26,11 @@
         <Bug pattern="DM_EXIT" />
     </Match>
     <Match>
-        <Class name="io.ballerina.stdlib.mqtt.listener.MqttCallbackImpl" />
+        <Class name="io.ballerina.stdlib.mqtt.client.MqttClientCallbackImpl" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.mqtt.listener.MqttListenerCallbackImpl" />
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
     <Match>
