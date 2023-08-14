@@ -68,8 +68,8 @@ public class MqttFunctionValidator {
     private final SyntaxNodeAnalysisContext context;
     private final ServiceDeclarationNode serviceDeclarationNode;
     private final SemanticModel semanticModel;
-    FunctionDefinitionNode onMessage;
-    FunctionDefinitionNode onError;
+    private final FunctionDefinitionNode onMessage;
+    private final FunctionDefinitionNode onError;
 
     public MqttFunctionValidator(SyntaxNodeAnalysisContext context, FunctionDefinitionNode onMessage,
                                  FunctionDefinitionNode onError) {
