@@ -448,3 +448,61 @@ function clientListenerConfigTest() returns error? {
 
     test:assertTrue(receivedMessages.indexOf(message) != ());
 }
+
+@test:Config {enable: true}
+function sharedSubscriptionsTest() returns error? {
+    string receivedValue1 = "";
+    string receivedValue2 = "";
+    string receivedValue3 = "";
+    Service sharedSubscriptionService1 = service object {
+        remote function onMessage(Message message) returns error? {
+            log:printInfo(check string:fromBytes(message.payload));
+            receivedValue1 = check string:fromBytes(message.payload);
+        }
+    };
+    Service sharedSubscriptionService2 = service object {
+        remote function onMessage(Message message) returns error? {
+            log:printInfo(check string:fromBytes(message.payload));
+            receivedValue2 = check string:fromBytes(message.payload);
+        }
+    };
+    Service sharedSubscriptionService3 = service object {
+        remote function onMessage(Message message) returns error? {
+            log:printInfo(check string:fromBytes(message.payload));
+            receivedValue3 = check string:fromBytes(message.payload);
+        }
+    };
+
+    Listener 'listener1 = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "$share/sharinggid/sharedsubscriptionstest");
+    Listener 'listener2 = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "$share/sharinggid/sharedsubscriptionstest");
+    Listener 'listener3 = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "$share/sharinggid/sharedsubscriptionstest");
+    check 'listener1.attach(sharedSubscriptionService1);
+    check 'listener2.attach(sharedSubscriptionService2);
+    check 'listener3.attach(sharedSubscriptionService3);
+    check 'listener1.'start();
+    check 'listener2.'start();
+    check 'listener3.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    addListenerAndClientToArray('listener1, 'client);
+    addListenerAndClientToArray('listener2);
+    addListenerAndClientToArray('listener3);
+
+    _ = check 'client->publish("sharedsubscriptionstest", {payload: "First message to shared group".toBytes()});
+    _ = check 'client->publish("sharedsubscriptionstest", {payload: "Second message to shared group".toBytes()});
+    _ = check 'client->publish("sharedsubscriptionstest", {payload: "Third message to shared group".toBytes()});
+    runtime:sleep(1);
+
+    string[] expectedValues = ["First message to shared group", "Second message to shared group", "Third message to shared group"];
+    if receivedValue1 != "" && receivedValue2 != "" && receivedValue3 != "" &&
+        expectedValues.indexOf(receivedValue1) != () &&
+        expectedValues.indexOf(receivedValue2) != () &&
+        expectedValues.indexOf(receivedValue3) != () &&
+        receivedValue1 != receivedValue2 &&
+        receivedValue1 != receivedValue3 &&
+        receivedValue2 != receivedValue3 {
+        test:assertTrue(true);
+    } else {
+        test:assertFail("Expected values not received correctly");
+    }
+}
