@@ -7,22 +7,22 @@ keywords = ["mqtt", "client", "messaging", "network", "pubsub", "iot"]
 repository = "https://github.com/ballerina-platform/module-ballerina-mqtt"
 distribution = "2201.7.0"
 
-[platform.java11]
+[platform.java17]
 graalvmCompatible = true
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "mqtt-native"
 version = "@toml.version@"
 path = "../native/build/libs/mqtt-native-@project.version@.jar"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 groupId = "org.eclipse.paho"
 artifactId = "org.eclipse.paho.mqttv5.client"
 version = "@paho.mqtt.version@"
 path = "./lib/org.eclipse.paho.mqttv5.client-@paho.mqtt.version@.jar"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 groupId = "org.bouncycastle"
 artifactId = "bcpkix-jdk15on"
 version = "@bouncy.castle.version@"
