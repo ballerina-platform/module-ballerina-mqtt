@@ -40,6 +40,7 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -106,11 +107,11 @@ public class MqttListenerCallbackImpl implements MqttCallback {
             callerObject.addNativeData(MqttConstants.SUBSCRIBER, subscriber);
             callerObject.addNativeData(MESSAGE_ID, message.getId());
             callerObject.addNativeData(MqttConstants.QOS, message.getQos());
-            if (message.getProperties().getResponseTopic() != null) {
+            if (Objects.nonNull(message.getProperties().getResponseTopic())) {
                 callerObject.addNativeData(MqttConstants.RESPONSE_TOPIC.getValue(),
                         message.getProperties().getResponseTopic());
             }
-            if (message.getProperties().getCorrelationData() != null) {
+            if (Objects.nonNull(message.getProperties().getCorrelationData())) {
                 callerObject.addNativeData(MqttConstants.CORRELATION_DATA,
                         message.getProperties().getCorrelationData());
             }

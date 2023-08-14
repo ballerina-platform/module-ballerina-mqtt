@@ -134,18 +134,19 @@ public enum Protocol {
 }
 
 # The stream iterator object that is used to iterate through the stream messages.
-#
-class StreamIterator {
+isolated class StreamIterator {
     private boolean isClosed = false;
 
     # Returns the next message in the stream.
-    # 
+    #
     # + return - `record{|Message value;|}` or else `error?` if the stream is closed or any error occurred while retrieving the next message
-    public isolated function next() returns record{|Message value;|}|error? {
-        if self.isClosed {
-            return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+    public isolated function next() returns record {|Message value;|}|error? {
+        lock {
+            if self.isClosed {
+                return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+            }
         }
-        Message|error? result = nextResult(self);
+        Message|error? result = self.nextResult(self);
         if result is Message {
             return {value: result};
         }
@@ -153,27 +154,29 @@ class StreamIterator {
     }
 
     # Closes the stream.
-    # 
+    #
     # + return - `error` if any error occurred while closing the stream or else `()`
     public isolated function close() returns error? {
-        if !self.isClosed {
-            self.isClosed = true;
-            return closeStream(self);
-        } else {
-            return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+        lock {
+            if !self.isClosed {
+                self.isClosed = true;
+                return self.closeStream(self);
+            } else {
+                return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+            }
         }
     }
+
+    isolated function nextResult(StreamIterator iterator) returns Message|error? =
+    @java:Method {
+        'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+    } external;
+
+    isolated function closeStream(StreamIterator iterator) =
+    @java:Method {
+        'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+    } external;
 }
-
-isolated function nextResult(StreamIterator iterator) returns Message|error? =
-@java:Method {
-    'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
-} external;
-
-isolated function closeStream(StreamIterator iterator) returns error? =
-@java:Method {
-    'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
-} external;
 
 # The MQTT service type.
 public type Service distinct service object {};

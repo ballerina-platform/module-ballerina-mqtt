@@ -98,14 +98,14 @@ public class MqttUtils {
         bMessage.put(StringUtils.fromString(MqttConstants.DUPLICATE), message.isDuplicate());
         bMessage.put(MqttConstants.TOPIC, StringUtils.fromString(topic));
         MqttProperties properties = message.getProperties();
-        if (properties != null) {
+        if (Objects.nonNull(properties)) {
             BMap<BString, Object> bMessageProperties = ValueCreator.createRecordValue(ModuleUtils.getModule(),
                     MqttConstants.RECORD_MESSAGE_PROPERTIES);
-            if (properties.getResponseTopic() != null) {
+            if (Objects.nonNull(properties.getResponseTopic())) {
                 bMessageProperties.put(RESPONSE_TOPIC,
                         StringUtils.fromString(message.getProperties().getResponseTopic()));
             }
-            if (properties.getCorrelationData() != null) {
+            if (Objects.nonNull(properties.getCorrelationData())) {
                 bMessageProperties.put(StringUtils.fromString(CORRELATION_DATA), ValueCreator.createArrayValue(
                         message.getProperties().getCorrelationData()));
             }
@@ -145,42 +145,42 @@ public class MqttUtils {
     public static MqttConnectionOptions getMqttConnectOptions(BMap<BString, Object> configuration) {
         MqttConnectionOptions options = new MqttConnectionOptions();
         Object connectionConfigObject = configuration.get(CONNECTION_CONFIGURATION);
-        if (connectionConfigObject != null && connectionConfigObject instanceof BMap) {
+        if (Objects.nonNull(connectionConfigObject) && connectionConfigObject instanceof BMap) {
             BMap<BString, Object> connectionConfig = (BMap<BString, Object>) connectionConfigObject;
             Object username = connectionConfig.get(USERNAME);
-            if (username != null) {
+            if (Objects.nonNull(username)) {
                 options.setUserName(((BString) username).getValue());
             }
             Object password = connectionConfig.get(PASSWORD);
-            if (password != null) {
+            if (Objects.nonNull(password)) {
                 options.setPassword(((BString) password).getValue().getBytes(StandardCharsets.UTF_8));
             }
             Object maxReconnectDelay = connectionConfig.get(MAX_RECONNECT_DELAY);
-            if (maxReconnectDelay != null) {
+            if (Objects.nonNull(maxReconnectDelay)) {
                 options.setMaxReconnectDelay(((Long) maxReconnectDelay).intValue());
             }
             Object keepAliveInterval = connectionConfig.get(KEEP_ALIVE_INTERVAL);
-            if (keepAliveInterval != null) {
+            if (Objects.nonNull(keepAliveInterval)) {
                 options.setKeepAliveInterval(((Long) keepAliveInterval).intValue());
             }
             Object connectionTimeout = connectionConfig.get(CONNECTION_TIMEOUT);
-            if (connectionTimeout != null) {
+            if (Objects.nonNull(connectionTimeout)) {
                 options.setConnectionTimeout(((Long) connectionTimeout).intValue());
             }
             Object cleanStart = connectionConfig.get(CLEAN_START);
-            if (cleanStart != null) {
+            if (Objects.nonNull(cleanStart)) {
                 options.setCleanStart((boolean) cleanStart);
             }
             Object serverUris = connectionConfig.get(SERVER_URIS);
-            if (serverUris != null) {
+            if (Objects.nonNull(serverUris)) {
                 options.setServerURIs(((BArray) serverUris).getStringArray());
             }
             Object automaticReconnect = connectionConfig.get(AUTOMATIC_RECONNECT);
-            if (automaticReconnect != null) {
+            if (Objects.nonNull(automaticReconnect)) {
                 options.setAutomaticReconnect((boolean) automaticReconnect);
             }
             Object secureSocket = connectionConfig.get(SECURE_SOCKET);
-            if (secureSocket != null) {
+            if (Objects.nonNull(secureSocket)) {
                 SocketFactory socketFactory = getSocketFactory((BMap<BString, Object>) secureSocket);
                 options.setSocketFactory(socketFactory);
             }
@@ -208,7 +208,7 @@ public class MqttUtils {
                 BMap<BString, BString> trustStore = (BMap<BString, BString>) bCert;
                 tmf = getTrustManagerFactory(trustStore);
             }
-            if (keyRecord != null) {
+            if (Objects.nonNull(keyRecord)) {
                 if (keyRecord.containsKey(CERT_FILE)) {
                     BString certFile = keyRecord.get(CERT_FILE);
                     BString keyFile = keyRecord.get(KEY_FILE);
@@ -307,7 +307,7 @@ public class MqttUtils {
         if (exception instanceof MqttException) {
             errorDetailMap.put(REASON_CODE, ((MqttException) exception).getReasonCode());
         }
-        if (cause != null) {
+        if (Objects.nonNull(cause)) {
             return ErrorCreator.createError(getModule(), ERROR_NAME, StringUtils.fromString(exception.getMessage()),
                     ErrorCreator.createError(exception.getCause()), errorDetailMap);
         }

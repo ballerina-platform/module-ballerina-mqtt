@@ -75,6 +75,7 @@ public class MqttConstants {
     public static final String RESPONSE_QUEUE = "responseQueue";
     public static final String DELIVERY_TOKEN_QUEUE = "deliveryTokenQueue";
     public static final String RESPONSE_EXECUTOR_SERVICE = "responseExecutorService";
+    public static final String CLIENT_EXECUTOR_SERVICES = "clientExecutorServices";
     public static final String STREAM_ITERATOR = "StreamIterator";
     public static final String ERROR_DETAILS = "ErrorDetails";
 

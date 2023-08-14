@@ -18,6 +18,8 @@
 
 package io.ballerina.stdlib.mqtt.caller;
 
+import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.stdlib.mqtt.utils.MqttConstants;
@@ -26,6 +28,10 @@ import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 
 /**
@@ -33,34 +39,44 @@ import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
  */
 public class CallerActions {
 
-    public static Object complete(BObject callerObject) {
+    private static final ExecutorService executorService = Executors.newCachedThreadPool(new CallerThreadFactory());
+
+    public static Object complete(Environment env, BObject callerObject) {
         MqttClient subscriber = (MqttClient) callerObject.getNativeData(MqttConstants.SUBSCRIBER);
         int messageId = (int) callerObject.getNativeData(MqttConstants.MESSAGE_ID);
         int qos = (int) callerObject.getNativeData(MqttConstants.QOS);
-        try {
-            subscriber.messageArrivedComplete(messageId, qos);
-        } catch (MqttException e) {
-            return MqttUtils.createMqttError(e);
-        }
+        Future future = env.markAsync();
+        executorService.execute(() -> {
+            try {
+                subscriber.messageArrivedComplete(messageId, qos);
+                future.complete(null);
+            } catch (MqttException e) {
+                future.complete(MqttUtils.createMqttError(e));
+            }
+        });
         return null;
     }
 
-    public static Object respond(BObject callerObject, BMap message) {
+    public static Object respond(Environment env, BObject callerObject, BMap message) {
         MqttClient subscriber = (MqttClient) callerObject.getNativeData(MqttConstants.SUBSCRIBER);
         byte[] correlationData = (byte[]) callerObject.getNativeData(MqttConstants.CORRELATION_DATA);
         String responseTopic = (String) callerObject.getNativeData(MqttConstants.RESPONSE_TOPIC.getValue());
         MqttMessage mqttMessage = generateMqttMessage(message);
-        if (responseTopic == null) {
+        if (Objects.isNull(responseTopic)) {
             return MqttUtils.createMqttError(new Exception("Response topic is not set"));
         }
-        if (correlationData != null) {
+        if (Objects.nonNull(correlationData)) {
             mqttMessage.getProperties().setCorrelationData(correlationData);
         }
-        try {
-            subscriber.publish(responseTopic, mqttMessage);
-        } catch (MqttException e) {
-            return MqttUtils.createMqttError(e);
-        }
+        Future future = env.markAsync();
+        executorService.execute(() -> {
+            try {
+                subscriber.publish(responseTopic, mqttMessage);
+                future.complete(null);
+            } catch (MqttException e) {
+                future.complete(MqttUtils.createMqttError(e));
+            }
+        });
         return null;
     }
 

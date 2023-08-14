@@ -32,35 +32,34 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.mqtt.utils.MqttConstants;
 import io.ballerina.stdlib.mqtt.utils.MqttUtils;
-import org.eclipse.paho.mqttv5.client.IMqttToken;
-import org.eclipse.paho.mqttv5.client.MqttCallback;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
-import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
-import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
+import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CLIENT_EXECUTOR_SERVICES;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.DELIVERY_TOKEN_QUEUE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_EXECUTOR_SERVICE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_QUEUE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.STREAM_ITERATOR;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
-import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getBMqttMessage;
-import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getMqttDeliveryToken;
 
 /**
  * Class containing the external methods of the publisher.
  */
 public class ClientActions {
+
+    private static final ExecutorService publishExecutorService =
+            Executors.newCachedThreadPool(new ClientThreadFactory());
 
     public static Object externInit(BObject clientObject, BString serverUri, BString clientId,
                                     BMap<BString, Object> clientConfiguration) {
@@ -68,37 +67,13 @@ public class ClientActions {
             MqttClient publisher = new MqttClient(serverUri.getValue(), clientId.getValue(), new MemoryPersistence());
             MqttConnectionOptions options = MqttUtils.getMqttConnectOptions(clientConfiguration);
             publisher.connect(options);
-            clientObject.addNativeData(MqttConstants.MQTT_CLIENT, publisher);
             LinkedBlockingQueue blockingQueue = new LinkedBlockingQueue<>();
             LinkedBlockingQueue deliveryTokenQueue = new LinkedBlockingQueue<>();
-            ExecutorService executor = Executors.newCachedThreadPool();
             clientObject.addNativeData(RESPONSE_QUEUE, blockingQueue);
             clientObject.addNativeData(DELIVERY_TOKEN_QUEUE, deliveryTokenQueue);
-            clientObject.addNativeData(RESPONSE_EXECUTOR_SERVICE, executor);
-            publisher.setCallback(new MqttCallback() {
-                @Override
-                public void disconnected(MqttDisconnectResponse disconnectResponse) {}
-                @Override
-                public void mqttErrorOccurred(MqttException exception) {}
-                @Override
-                public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    BMap<BString, Object> bMqttMessage = getBMqttMessage(message, topic);
-                    blockingQueue.put(bMqttMessage);
-                }
-                @Override
-                public void deliveryComplete(IMqttToken token) {
-                    BMap<BString, Object> bMqttToken = getMqttDeliveryToken(token);
-                    try {
-                        deliveryTokenQueue.put(bMqttToken);
-                    } catch (InterruptedException exception) {
-                        exception.printStackTrace();
-                    }
-                }
-                @Override
-                public void connectComplete(boolean reconnect, String serverURI) {}
-                @Override
-                public void authPacketArrived(int reasonCode, MqttProperties properties) {}
-            });
+            clientObject.addNativeData(MqttConstants.MQTT_CLIENT, publisher);
+            clientObject.addNativeData(CLIENT_EXECUTOR_SERVICES, new ArrayList<ExecutorService>());
+            publisher.setCallback(new MqttClientCallbackImpl(blockingQueue, deliveryTokenQueue));
         } catch (BError e) {
             return e;
         } catch (Exception e) {
@@ -131,8 +106,7 @@ public class ClientActions {
             publisher.publish(topic.getValue(), mqttMessage);
             LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject
                     .getNativeData(DELIVERY_TOKEN_QUEUE);
-            ExecutorService executor = (ExecutorService) clientObject.getNativeData(RESPONSE_EXECUTOR_SERVICE);
-            executor.submit(() -> {
+            publishExecutorService.execute(() -> {
                 try {
                     future.complete(deliveryTokenQueue.take());
                 } catch (InterruptedException e) {
@@ -148,10 +122,12 @@ public class ClientActions {
 
     public static Object externReceive(BObject clientObject, BTypedesc bTypedesc) {
         LinkedBlockingQueue blockingQueue = (LinkedBlockingQueue) clientObject.getNativeData(RESPONSE_QUEUE);
-        ExecutorService executor = (ExecutorService) clientObject.getNativeData(RESPONSE_EXECUTOR_SERVICE);
+        ExecutorService responseExecutorService = Executors.newCachedThreadPool(new ClientThreadFactory());
         BObject streamIterator = ValueCreator.createObjectValue(getModule(), STREAM_ITERATOR);
         streamIterator.addNativeData(RESPONSE_QUEUE, blockingQueue);
-        streamIterator.addNativeData(RESPONSE_EXECUTOR_SERVICE, executor);
+        streamIterator.addNativeData(RESPONSE_EXECUTOR_SERVICE, responseExecutorService);
+        ((ArrayList<ExecutorService>) clientObject.getNativeData(CLIENT_EXECUTOR_SERVICES))
+                .add(responseExecutorService);
         StreamType streamType = (StreamType) bTypedesc.getDescribingType();
         BStream bStream = ValueCreator.createStreamValue(TypeCreator.createStreamType(
                 streamType.getConstrainedType(), streamType.getCompletionType()), streamIterator);
@@ -160,8 +136,8 @@ public class ClientActions {
 
     public static Object externClose(BObject clientObject) {
         MqttClient publisher = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
-        ExecutorService executor = (ExecutorService) clientObject.getNativeData(RESPONSE_EXECUTOR_SERVICE);
-        executor.shutdown();
+        ((ArrayList<ExecutorService>) clientObject.getNativeData(CLIENT_EXECUTOR_SERVICES))
+                .forEach(ExecutorService::shutdown);
         try {
             publisher.close();
         } catch (MqttException e) {
@@ -199,7 +175,7 @@ public class ClientActions {
         BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData(RESPONSE_QUEUE);
         ExecutorService executor = (ExecutorService) streamIterator.getNativeData(RESPONSE_EXECUTOR_SERVICE);
         Future future = env.markAsync();
-        executor.submit(() -> {
+        executor.execute(() -> {
             try {
                 BMap message = (BMap) messageQueue.take();
                 future.complete(message);
@@ -211,12 +187,11 @@ public class ClientActions {
         return null;
     }
 
-    public static Object closeStream(BObject streamIterator) {
+    public static void closeStream(BObject streamIterator) {
         BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData(RESPONSE_QUEUE);
         ExecutorService executor = (ExecutorService) streamIterator.getNativeData(RESPONSE_EXECUTOR_SERVICE);
         messageQueue.clear();
         executor.shutdown();
         streamIterator.addNativeData(RESPONSE_QUEUE, null);
-        return null;
     }
 }
