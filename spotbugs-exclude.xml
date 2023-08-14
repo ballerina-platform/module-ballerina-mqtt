@@ -29,4 +29,8 @@
         <Class name="io.ballerina.stdlib.mqtt.listener.MqttCallbackImpl" />
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.mqtt.compiler.MqttFunctionValidator" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
 </FindBugsFilter>
