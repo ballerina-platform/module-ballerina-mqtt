@@ -52,13 +52,13 @@ import static io.ballerina.stdlib.mqtt.utils.MqttUtils.getMqttDeliveryToken;
 /**
  * Class containing the callback of Mqtt subscriber.
  */
-public class MqttCallbackImpl implements MqttCallback {
+public class MqttListenerCallbackImpl implements MqttCallback {
 
     private final Runtime runtime;
     private final BObject service;
     private final MqttClient subscriber;
 
-    public MqttCallbackImpl(Environment environment, BObject service, MqttClient subscriber) {
+    public MqttListenerCallbackImpl(Environment environment, BObject service, MqttClient subscriber) {
         this.runtime = environment.getRuntime();
         this.service = service;
         this.subscriber = subscriber;

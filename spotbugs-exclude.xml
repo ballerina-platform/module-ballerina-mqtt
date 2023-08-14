@@ -18,7 +18,7 @@
 
 <FindBugsFilter>
     <Match>
-        <Class name="io.ballerina.stdlib.mqtt.listener.MqttCallbackImpl"/>
+        <Class name="io.ballerina.stdlib.mqtt.listener.MqttListenerCallbackImpl"/>
         <Bug pattern="RV_RETURN_VALUE_IGNORED"/>
     </Match>
     <Match>

@@ -59,7 +59,7 @@ public class ListenerActions {
     public static Object externAttach(Environment environment, BObject clientObject, BObject service, Object topics) {
         clientObject.addNativeData("service", service);
         MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
-        subscriber.setCallback(new MqttCallbackImpl(environment, service, subscriber));
+        subscriber.setCallback(new MqttListenerCallbackImpl(environment, service, subscriber));
         return null;
     }
 
