@@ -48,9 +48,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CLIENT_EXECUTOR_SERVICES;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.DELIVERY_TOKEN_QUEUE;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.DESTINATION_TOPIC;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_EXECUTOR_SERVICE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_QUEUE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.STREAM_ITERATOR;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.WILL_DETAILS;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.WILL_MESSAGE;
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 
 /**
@@ -66,6 +69,7 @@ public class ClientActions {
         try {
             MqttClient publisher = new MqttClient(serverUri.getValue(), clientId.getValue(), new MemoryPersistence());
             MqttConnectionOptions options = MqttUtils.getMqttConnectOptions(clientConfiguration);
+            setWillMessage(clientConfiguration, options);
             publisher.connect(options);
             LinkedBlockingQueue blockingQueue = new LinkedBlockingQueue<>();
             LinkedBlockingQueue deliveryTokenQueue = new LinkedBlockingQueue<>();
@@ -193,5 +197,14 @@ public class ClientActions {
         messageQueue.clear();
         executor.shutdown();
         streamIterator.addNativeData(RESPONSE_QUEUE, null);
+    }
+
+    private static void setWillMessage(BMap<BString, Object> clientConfiguration, MqttConnectionOptions options) {
+        if (clientConfiguration.containsKey(WILL_DETAILS)) {
+            BMap willDetails = (BMap) clientConfiguration.get(WILL_DETAILS);
+            String destinationTopic = willDetails.getStringValue(DESTINATION_TOPIC).getValue();
+            MqttMessage willMessage = generateMqttMessage(willDetails.getMapValue(WILL_MESSAGE));
+            options.setWill(destinationTopic, willMessage);
+        }
     }
 }

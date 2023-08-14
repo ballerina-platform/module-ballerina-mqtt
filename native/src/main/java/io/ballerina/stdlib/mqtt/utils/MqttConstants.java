@@ -67,6 +67,9 @@ public class MqttConstants {
     public static final String CORRELATION_DATA = "correlationData";
     public static final BString MESSAGE_PROPERTIES = StringUtils.fromString("properties");
     public static final BString REASON_CODE = StringUtils.fromString("reasonCode");
+    public static final BString WILL_DETAILS = StringUtils.fromString("willDetails");
+    public static final BString DESTINATION_TOPIC = StringUtils.fromString("destinationTopic");
+    public static final BString WILL_MESSAGE = StringUtils.fromString("willMessage");
     
     public static final String ONCOMPLETE = "onComplete";
     public static final String ONMESSAGE = "onMessage";

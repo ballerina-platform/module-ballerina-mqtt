@@ -362,6 +362,7 @@ function listenerDetachTest() returns error? {
     check 'listener.'start();
 
     Client 'client = check new (AUTH_MTLS_ENDPOINT, uuid:createType1AsString(), {connectionConfig: authMtlsConnConfig});
+    addListenerAndClientToArray('client = 'client);
     string message = "Test message 1 for detach";
     _ = check 'client->publish("mqtt/detachtopic", {payload: message.toBytes()});
     runtime:sleep(1);
@@ -370,7 +371,6 @@ function listenerDetachTest() returns error? {
     message = "Test message 2 for detach";
     _ = check 'client->publish("mqtt/detachtopic", {payload: message.toBytes()});
     test:assertTrue(receivedMessages.indexOf(message) == ());
-    addListenerAndClientToArray('client = 'client);
 }
 
 @test:Config {enable: true}
@@ -505,4 +505,27 @@ function sharedSubscriptionsTest() returns error? {
     } else {
         test:assertFail("Expected values not received correctly");
     }
+}
+
+@test:Config {enable: true}
+function clientWillMessageTest() returns error? {
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/willmessagetopic");
+    check 'listener.attach(basicService);
+    check 'listener.'start();
+
+    string message = "Test message for will message";
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), {
+        willDetails: {
+            willMessage: {
+                payload: "This is my last will message".toBytes()
+            },
+            destinationTopic: "mqtt/willmessagetopic"
+        }
+    });
+    addListenerAndClientToArray('listener, 'client);
+
+    _ = check 'client->publish("sharedsubscriptionstest", {payload: message.toBytes()});
+    runtime:sleep(1);
+
+    test:assertTrue(receivedMessages.indexOf(message) == ());
 }

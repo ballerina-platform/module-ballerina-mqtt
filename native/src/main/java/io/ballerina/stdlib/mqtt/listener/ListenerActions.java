@@ -94,6 +94,7 @@ public class ListenerActions {
         MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         try {
             subscriber.disconnect();
+            subscriber.close();
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }
@@ -105,6 +106,7 @@ public class ListenerActions {
         MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         try {
             subscriber.disconnectForcibly();
+            subscriber.close();
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }

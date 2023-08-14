@@ -47,9 +47,11 @@ public type MessageProperties record {|
 
 # The configurations related to the client initialization.
 #
-# + connectionConfig - The related connection configuration
+# + connectionConfig - The related connection configuration  
+# + willDetails - The configurations related to the last will message of the client
 public type ClientConfiguration record {|
     ConnectionConfiguration connectionConfig?;
+    WillDetails willDetails?; 
 |};
 
 # The configurations related to the listener initialization.
@@ -59,15 +61,6 @@ public type ClientConfiguration record {|
 public type ListenerConfiguration record {|
     ConnectionConfiguration connectionConfig?;
     boolean manualAcks = false;
-|};
-
-# An MQTTSubscription which contains the topic and the QoS level.
-#
-# + topic - The topic to subscribe to
-# + qos - The QoS level to subscribe at
-public type Subscription record {|
-    string topic;
-    int qos = 1;
 |};
 
 # The configurations related to the connection initialization of `mqtt:Client` and `mqtt:Listener`.
@@ -91,6 +84,24 @@ public type ConnectionConfiguration record {|
     boolean cleanStart?;
     string[] serverUris?;
     boolean automaticReconnect?;
+|};
+
+# The configurations related to the last will message of the client.
+#
+# + willMessage - The last will message to be sent to the subscribers
+# + destinationTopic - The topic to publish the last will message
+public type WillDetails record {|
+   Message willMessage;
+   string destinationTopic; 
+|};
+
+# An MQTTSubscription which contains the topic and the QoS level.
+#
+# + topic - The topic to subscribe to
+# + qos - The QoS level to subscribe at
+public type Subscription record {|
+    string topic;
+    int qos = 1;
 |};
 
 # The mechanism for tracking the delivery of a message
