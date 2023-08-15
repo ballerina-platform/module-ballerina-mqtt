@@ -32,8 +32,8 @@ is considered a bug.
 3. [Client](#3-client)
     *  3.1. [Configurations](#31-configurations)
     *  3.2. [Initialization](#32-initialization)
-        *    3.2.1. [Insecure Client](#321-insecure-client)
-        *    3.2.2. [Secure Client](#322-secure-client)
+        *  3.2.1. [Insecure Client](#321-insecure-client)
+        *  3.2.2. [Secure Client](#322-secure-client)
     *  3.3. [Functions](#33-functions)
 4. [Subscriber](#4-subscriber)
     *  4.1. [Configurations](#41-configurations)
@@ -42,13 +42,6 @@ is considered a bug.
         *  4.2.2. [Secure Listener](#422-secure-listener)
     *  4.3. [Usage](#43-usage)
     *  4.4. [Caller](#44-caller)
-5. [Samples](#5-samples)
-    *  5.1. [Basic publish subscribe](#51-basic-publish-subscribe)
-        *  5.1.1. [Publish](#511-publish)
-        *  5.1.2. [Subscribe](#512-subscribe)
-    *  5.2. [Request/Response](#52-requestresponse)
-        *  5.2.1. [Publish](#511-publish)
-        *  5.2.2. [Subscribe](#522-subscribe)
 
 ## 1. Overview
 MQTT is a lightweight, publish-subscribe, machine to machine network protocol for message queue/message queuing service.
@@ -278,6 +271,50 @@ of `mqtt:Message`s and the publisher can asynchronously iterate through the stre
 # + return - `stream<Message, error?>` or else`mqtt:Error` if an error occurs while receiving the response
 isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|Error;
 ```
+
+A sample usage of the client API in the request/response scenario is as follows.
+```ballerina
+import ballerina/mqtt;
+import ballerina/uuid;
+import ballerina/io;
+
+configurable string requestTopic = "request/topic";
+configurable string responseTopic = "response/topic";
+
+public function main() returns error? {
+    mqtt:Client mqttClient = check new (mqtt:DEFAULT_URL, uuid:createType1AsString(), {
+        connectionConfig: {
+            secureSocket: {
+                cert: "path/to/public.crt"
+            }
+        }
+    });
+    check mqttClient->subscribe(responseTopic);
+    mqtt:DeliveryToken token = check mqttClient->publish(requestTopic, {
+        payload: "Hello World!".toBytes(),
+        properties: {
+            responseTopic: responseTopic,
+            correlationData: "msg-1".toBytes()
+        }
+    });
+    io:println(string`Delivered message with id: ${token.messageId.toString()} to topic: ${token.topic}`);
+
+    stream<mqtt:Message, error?> respStream = check mqttClient->receive();
+    future<error?> f1 = start readResponses(respStream);
+    check wait f1;
+}
+
+function readResponses(stream<mqtt:Message, error?> respStream) returns error? {
+    while true {
+        record {|mqtt:Message value;|}? val = check respStream.next();
+        if val == () {
+            break;
+        } else {
+            io:println(string`Received value: ${check string:fromBytes(val.value.payload)}`);
+        }
+    }
+} 
+```
 ## 4. Subscriber
 The subscriber allows applications to read messages from different topics in the MQTT broker. `mqtt:Listener` is used as 
 a subscriber which requires a `mqtt:Service` in order to handle the incoming messages.
@@ -442,87 +479,7 @@ isolated remote function respond(mqtt:Message response) returns mqtt:Error?;
 ```
 This will internally read the response topic sent by the publisher and send the response to that topic.
 
-## 5. Samples
-### 5.1. Basic publish subscribe
-#### 5.1.1. Publish
-```ballerina
-import ballerina/mqtt;
-import ballerina/uuid;
-import ballerina/io;
-
-configurable string requestTopic = "request/topic";
-configurable string responseTopic = "response/topic";
-
-public function main() returns error? {
-    mqtt:Client mqttClient = check new (mqtt:DEFAULT_URL, uuid:createType1AsString());
-    check mqttClient->subscribe(responseTopic);
-    mqtt:DeliveryToken token = check mqttClient->publish(requestTopic, {
-        payload: "Hello World!".toBytes()
-    });
-    io:println(string `Delivered message with id: ${token.messageId.toString()} to topic: ${token.topic}`);
-}
-```
-#### 5.1.2. Subscribe
-```ballerina
-import ballerina/uuid;
-import ballerina/log;
-import ballerina/mqtt;
-
-service on new mqtt:Listener(mqtt:DEFAULT_URL, uuid:createType1AsString(), "request/topic") {
-    remote function onMessage(mqtt:Message message, mqtt:Caller caller) returns error? {
-        log:printInfo(string`Message received: ${check string:fromBytes(message.payload)}`);
-    }
-
-    remote function onError(mqtt:Error err) {
-        log:printInfo(string`Error occurred: ${err.message()}`);
-    }
-}
-```
-### 5.2. Request/Response
-#### 5.2.1. Publish
-```ballerina
-import ballerina/mqtt;
-import ballerina/uuid;
-import ballerina/io;
-
-configurable string requestTopic = "request/topic";
-configurable string responseTopic = "response/topic";
-
-public function main() returns error? {
-    mqtt:Client mqttClient = check new (mqtt:DEFAULT_URL, uuid:createType1AsString(), {
-        connectionConfig: {
-            secureSocket: {
-                cert: "path/to/public.crt"
-            }
-        }
-    });
-    check mqttClient->subscribe(responseTopic);
-    mqtt:DeliveryToken token = check mqttClient->publish(requestTopic, {
-        payload: "Hello World!".toBytes(),
-        properties: {
-            responseTopic: responseTopic,
-            correlationData: "msg-1".toBytes()
-        }
-    });
-    io:println(string`Delivered message with id: ${token.messageId.toString()} to topic: ${token.topic}`);
-
-    stream<mqtt:Message, error?> respStream = check mqttClient->receive();
-    future<error?> f1 = start readResponses(respStream);
-    check wait f1;
-}
-
-function readResponses(stream<mqtt:Message, error?> respStream) returns error? {
-    while true {
-        record {|mqtt:Message value;|}? val = check respStream.next();
-        if val == () {
-            break;
-        } else {
-            io:println(string`Received value: ${check string:fromBytes(val.value.payload)}`);
-        }
-    }
-} 
-```
-#### 5.2.2. Subscribe
+A sample usage of the listener in the request/response scenario is as follows.
 ```ballerina
 import ballerina/uuid;
 import ballerina/log;
