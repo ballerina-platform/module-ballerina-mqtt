@@ -2,8 +2,8 @@
 
 _Owners_: @shafreenAnfar @dilanSachi    
 _Reviewers_: @shafreenAnfar  
-_Created_: 2023/08/14    
-_Updated_: 2023/08/14   
+_Created_: 2023/08/15    
+_Updated_: 2023/08/15   
 _Edition_: Swan Lake
 
 ## Introduction
@@ -25,23 +25,30 @@ is considered a bug.
 1. [Overview](#1-overview)
 2. [Configurations](#2-configurations)
     *  2.1. [Security Configurations](#21-security-configurations)
-3. [Client](#3-producer)
+    *  2.2. [ConnectionConfiguration](#22-connectionconfiguration)
+    *  2.3. [Message](#23-message)
+    *  2.4. [DeliveryToken](#24-deliverytoken)
+    *  2.5. [Subscription](#25-subscription)
+3. [Client](#3-client)
     *  3.1. [Configurations](#31-configurations)
     *  3.2. [Initialization](#32-initialization)
         *    3.2.1. [Insecure Client](#321-insecure-client)
         *    3.2.2. [Secure Client](#322-secure-client)
     *  3.3. [Functions](#33-functions)
-4. [Subscriber](#4-consumer)
+4. [Subscriber](#4-subscriber)
     *  4.1. [Configurations](#41-configurations)
-    *  4.3. [Listener](#43-listener)
-        *  4.3.1. [Initialization](#431-initialization)
-            *  4.3.1.1. [Insecure Listener](#4311-insecure-listener)
-            *  4.3.1.2. [Secure Listener](#4312-secure-listener)
-        *  4.3.2. [Usage](#432-usage)
-        *  4.3.3. [Caller](#433-caller)
+    *  4.2. [Initialization](#42-initialization)
+        *  4.2.1. [Insecure Listener](#421-insecure-listener)
+        *  4.2.2. [Secure Listener](#422-secure-listener)
+    *  4.3. [Usage](#43-usage)
+    *  4.4. [Caller](#44-caller)
 5. [Samples](#5-samples)
-    *  5.1. [Publish Messages](#51-produce-messages)
-    *  5.2. [Subscribe to Messages](#52-consume-messages)
+    *  5.1. [Basic publish subscribe](#51-basic-publish-subscribe)
+        *  5.1.1. [Publish](#511-publish)
+        *  5.1.2. [Subscribe](#512-subscribe)
+    *  5.2. [Request/Response](#52-requestresponse)
+        *  5.2.1. [Publish](#511-publish)
+        *  5.2.2. [Subscribe](#522-subscribe)
 
 ## 1. Overview
 MQTT is a lightweight, publish-subscribe, machine to machine network protocol for message queue/message queuing service.
@@ -83,7 +90,7 @@ public type SecureSocket record {|
 * In order to authenticate the client with the MQTT broker, the `username` and `password` fields of 
 `mqtt:ConnectionConfiguration` can be used.
 
-### 2.1. ConnectionConfiguration
+### 2.2. ConnectionConfiguration
 * This record represents the common connection configurations required to initialize both the client and the listener.
 ```ballerina
 public type ConnectionConfiguration record {|
@@ -215,7 +222,6 @@ mqtt:ClientConfiguration clientConfig = {
     connectionConfig: connConfig
 };
 ```
-
 ### 3.3. Functions
 * MQTT client API can be used to publish messages to the MQTT broker. For this, the `publish()` method can be used.
 ```ballerina
@@ -285,9 +291,9 @@ public type ListenerConfiguration record {|
     boolean manualAcks = false;
 |};
 ```
-#### 4.2. Initialization
+### 4.2. Initialization
 A `mqtt:Listener` can be established insecurely or securely as same as the `mqtt:Client`.
-##### 4.2.1. Insecure Listener
+#### 4.2.1. Insecure Listener
 A simple insecure connection with the MQTT broker can be easily established by providing the MQTT broker URL, a unique 
 id and the subscriptions as the input parameters.
 ```ballerina
@@ -299,7 +305,7 @@ id and the subscriptions as the input parameters.
 # + return - `mqtt:Error` if an error occurs while creating the listener or else `()`
 public isolated function init(string serverUri, string clientId, string|string[]|mqtt:Subscription|mqtt:Subscription[] subscriptions, *mqtt:ListenerConfiguration config) returns mqtt:Error?;
 ```
-##### 4.3.1.2. Secure Listener
+#### 4.2.2. Secure Listener
 A secure client can be established via SSL as same as the `mqtt:Client` using either a `crypto:Truststore` or a
 certificate file. Additionally, a `crypto:Keystore` or a key file can also be provided.
 ```ballerina
@@ -320,7 +326,7 @@ mqtt:ListenerConfiguration clientConfig = {
     connectionConfig: connConfig
 };
 ```
-#### 4.3.2. Usage
+### 4.3. Usage
 After initializing the listener, a service must be attached to the listener. There are two ways for this.
 1. Attach the service to the listener directly.
 ```ballerina
@@ -430,7 +436,7 @@ public isolated function gracefulStop() returns error?;
 public isolated function immediateStop() returns error?;
 ```
 
-#### 4.3.3. Caller
+### 4.4. Caller
 `mqtt:Caller` is provided as a parameter to the `onMessage` remote function. It can be used to send a response back to 
 the publisher in request/response scenario or acknowledge the message when in `manualAcks` mode.
 * `complete()` - can be used to acknowledge the message in `manualAcks` mode.
@@ -452,11 +458,107 @@ isolated remote function respond(mqtt:Message response) returns mqtt:Error?;
 This will internally read the response topic sent by the publisher and send the response to that topic.
 
 ## 5. Samples
-### 5.1. Publish Messages
+### 5.1. Basic publish subscribe
+#### 5.1.1. Publish
 ```ballerina
+import ballerina/mqtt;
+import ballerina/uuid;
+import ballerina/io;
 
+configurable string requestTopic = "request/topic";
+configurable string responseTopic = "response/topic";
+
+public function main() returns error? {
+    mqtt:Client mqttClient = check new (mqtt:DEFAULT_URL, uuid:createType1AsString());
+    check mqttClient->subscribe(responseTopic);
+    mqtt:DeliveryToken token = check mqttClient->publish(requestTopic, {
+        payload: "Hello World!".toBytes()
+    });
+    io:println(string `Delivered message with id: ${token.messageId.toString()} to topic: ${token.topic}`);
+}
 ```
-### 5.3. Request/Response
-* Publish
+#### 5.1.2. Subscribe
+```ballerina
+import ballerina/uuid;
+import ballerina/log;
+import ballerina/mqtt;
 
-* Subscribe
+service on new mqtt:Listener(mqtt:DEFAULT_URL, uuid:createType1AsString(), "request/topic") {
+    remote function onMessage(mqtt:Message message, mqtt:Caller caller) returns error? {
+        log:printInfo(string`Message received: ${check string:fromBytes(message.payload)}`);
+    }
+
+    remote function onError(mqtt:Error err) {
+        log:printInfo(string`Error occurred: ${err.message()}`);
+    }
+}
+```
+### 5.2. Request/Response
+#### 5.2.1. Publish
+```ballerina
+import ballerina/mqtt;
+import ballerina/uuid;
+import ballerina/io;
+
+configurable string requestTopic = "request/topic";
+configurable string responseTopic = "response/topic";
+
+public function main() returns error? {
+    mqtt:Client mqttClient = check new (mqtt:DEFAULT_URL, uuid:createType1AsString(), {
+        connectionConfig: {
+            secureSocket: {
+                cert: "path/to/public.crt"
+            }
+        }
+    });
+    check mqttClient->subscribe(responseTopic);
+    mqtt:DeliveryToken token = check mqttClient->publish(requestTopic, {
+        payload: "Hello World!".toBytes(),
+        properties: {
+            responseTopic: responseTopic,
+            correlationData: "msg-1".toBytes()
+        }
+    });
+    io:println(string`Delivered message with id: ${token.messageId.toString()} to topic: ${token.topic}`);
+
+    stream<mqtt:Message, error?> respStream = check mqttClient->receive();
+    future<error?> f1 = start readResponses(respStream);
+    check wait f1;
+}
+
+function readResponses(stream<mqtt:Message, error?> respStream) returns error? {
+    while true {
+        record {|mqtt:Message value;|}? val = check respStream.next();
+        if val == () {
+            break;
+        } else {
+            io:println(string`Received value: ${check string:fromBytes(val.value.payload)}`);
+        }
+    }
+} 
+```
+#### 5.2.2. Subscribe
+```ballerina
+import ballerina/uuid;
+import ballerina/log;
+import ballerina/mqtt;
+
+service on new mqtt:Listener(mqtt:DEFAULT_URL, uuid:createType1AsString(), "request/topic", {
+    connectionConfig: {
+        secureSocket: {
+            cert: "path/to/public.crt"
+        }
+    }
+}) {
+    remote function onMessage(mqtt:Message message, mqtt:Caller caller) returns error? {
+        log:printInfo(string`Message received: ${check string:fromBytes(message.payload)}`);
+        check caller->respond({
+            payload: "Response from subscriber for message ".toBytes()
+        });
+    }
+
+    remote function onError(mqtt:Error err) {
+        log:printInfo(string`Error occurred: ${err.message()}`);
+    }
+}
+```
