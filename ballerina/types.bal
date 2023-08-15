@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/crypto;
+import ballerina/jballerina.java;
 
 # An MQTT message holds the application payload and other metadata.
 #
@@ -23,19 +24,34 @@ import ballerina/crypto;
 # + retained - Indicates whether this message should/is retained by the server
 # + duplicate - Indicates whether or not this message might be a duplicate
 # + messageId - The message ID of the message. This is only set on messages received from the server
+# + topic - The topic this message was received on. This is only set on messages received from the server  
+# + properties - The properties of the message
 public type Message record {|
     byte[] payload;
     int qos = 1;
     boolean retained = false;
     boolean duplicate = false;
     int messageId?;
+    string topic?;
+    MessageProperties properties?;
+|};
+
+# Properties of an MQTT message.
+#
+# + responseTopic - The topic to send the response to in reqeust response scenario
+# + correlationData - The correlation data to uniquely identify the message
+public type MessageProperties record {|
+    string responseTopic?;
+    byte[] correlationData?;
 |};
 
 # The configurations related to the client initialization.
 #
-# + connectionConfig - The related connection configuration
+# + connectionConfig - The related connection configuration  
+# + willDetails - The configurations related to the last will message of the client
 public type ClientConfiguration record {|
     ConnectionConfiguration connectionConfig?;
+    WillDetails willDetails?; 
 |};
 
 # The configurations related to the listener initialization.
@@ -45,15 +61,6 @@ public type ClientConfiguration record {|
 public type ListenerConfiguration record {|
     ConnectionConfiguration connectionConfig?;
     boolean manualAcks = false;
-|};
-
-# An MQTTSubscription which contains the topic and the QoS level.
-#
-# + topic - The topic to subscribe to
-# + qos - The QoS level to subscribe at
-public type Subscription record {|
-    string topic;
-    int qos = 1;
 |};
 
 # The configurations related to the connection initialization of `mqtt:Client` and `mqtt:Listener`.
@@ -79,17 +86,31 @@ public type ConnectionConfiguration record {|
     boolean automaticReconnect?;
 |};
 
+# The configurations related to the last will message of the client.
+#
+# + willMessage - The last will message to be sent to the subscribers
+# + destinationTopic - The topic to publish the last will message
+public type WillDetails record {|
+   Message willMessage;
+   string destinationTopic; 
+|};
+
+# An MQTTSubscription which contains the topic and the QoS level.
+#
+# + topic - The topic to subscribe to
+# + qos - The QoS level to subscribe at
+public type Subscription record {|
+    string topic;
+    int qos = 1;
+|};
+
 # The mechanism for tracking the delivery of a message
 #
-# + message - Message associated with this token
-# + grantedQos - The granted QoS list from a suback
-# + messageId - Message ID of the message that is associated with the token
-# + topics - Topic string(s) for the subscribe being tracked by this token
+# + messageId - Message ID of the message that was delivered
+# + topic - Topic for the message that was delivered
 public type DeliveryToken record {|
-    Message message;
-    int[] grantedQos;
     int messageId;
-    string[] topics;
+    string topic;
 |};
 
 # Configurations for secure communication with the MQTT server.
@@ -121,6 +142,51 @@ public type CertKey record {|
 public enum Protocol {
     SSL,
     TLS
+}
+
+# The stream iterator object that is used to iterate through the stream messages.
+isolated class StreamIterator {
+    private boolean isClosed = false;
+
+    # Returns the next message in the stream.
+    #
+    # + return - `record{|Message value;|}` or else `error?` if the stream is closed or any error occurred while retrieving the next message
+    public isolated function next() returns record {|Message value;|}|Error? {
+        lock {
+            if self.isClosed {
+                return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+            }
+        }
+        Message|Error? result = self.nextResult();
+        if result is Message {
+            return {value: result};
+        }
+        return result;
+    }
+
+    # Closes the stream.
+    #
+    # + return - `error` if any error occurred while closing the stream or else `()`
+    public isolated function close() returns error? {
+        lock {
+            if !self.isClosed {
+                self.isClosed = true;
+                return self.closeStream();
+            } else {
+                return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
+            }
+        }
+    }
+
+    isolated function nextResult() returns Message|Error? =
+    @java:Method {
+        'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+    } external;
+
+    isolated function closeStream() =
+    @java:Method {
+        'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+    } external;
 }
 
 # The MQTT service type.

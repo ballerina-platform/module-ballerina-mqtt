@@ -40,6 +40,7 @@ build-config/checkstyle/.settings/
 native/.classpath
 native/.project
 native/.settings/
+native/bin/
 test-utils/.classpath
 test-utils/.project
 test-utils/.settings/

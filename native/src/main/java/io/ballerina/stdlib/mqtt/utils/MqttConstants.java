@@ -50,7 +50,7 @@ public class MqttConstants {
 
     public static final String ERROR_NAME = "Error";
 
-    public static final String CLIENT_OBJECT = "clientObject";
+    public static final String MQTT_CLIENT = "mqttClient";
     public static final String SUBSCRIBER = "subscriber";
     public static final String MESSAGE_ID = "messageId";
     public static final String QOS = "qos";
@@ -61,11 +61,26 @@ public class MqttConstants {
     public static final String SERVICE = "service";
     public static final String CALLER = "Caller";
     public static final String RECORD_MESSAGE = "Message";
+    public static final String RECORD_MESSAGE_PROPERTIES = "MessageProperties";
     public static final String RECORD_DELIVERY_TOKEN = "DeliveryToken";
+    public static final BString RESPONSE_TOPIC = StringUtils.fromString("responseTopic");
+    public static final String CORRELATION_DATA = "correlationData";
+    public static final BString MESSAGE_PROPERTIES = StringUtils.fromString("properties");
+    public static final BString REASON_CODE = StringUtils.fromString("reasonCode");
+    public static final BString WILL_DETAILS = StringUtils.fromString("willDetails");
+    public static final BString DESTINATION_TOPIC = StringUtils.fromString("destinationTopic");
+    public static final BString WILL_MESSAGE = StringUtils.fromString("willMessage");
     
     public static final String ONCOMPLETE = "onComplete";
     public static final String ONMESSAGE = "onMessage";
     public static final String ONERROR = "onError";
+
+    public static final String RESPONSE_QUEUE = "responseQueue";
+    public static final String DELIVERY_TOKEN_QUEUE = "deliveryTokenQueue";
+    public static final String RESPONSE_EXECUTOR_SERVICE = "responseExecutorService";
+    public static final String CLIENT_EXECUTOR_SERVICES = "clientExecutorServices";
+    public static final String STREAM_ITERATOR = "StreamIterator";
+    public static final String ERROR_DETAILS = "ErrorDetails";
 
     public static final BString CRYPTO_TRUSTSTORE_PATH = StringUtils.fromString("path");
     public static final BString CRYPTO_TRUSTSTORE_PASSWORD = StringUtils.fromString("password");

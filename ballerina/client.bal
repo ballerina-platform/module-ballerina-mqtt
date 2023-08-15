@@ -24,7 +24,7 @@ public client isolated class Client {
     # + serverUri - URI of the server to connect to
     # + clientId - Unique ID of the client
     # + config - Optional configuration values to use for the client
-    # + return - `mqtt:Error` if an error occurs while creating the client
+    # + return - `mqtt:Error` if an error occurs while creating the client or else `()`
     public isolated function init(string serverUri, string clientId, *ClientConfiguration config) returns Error? {
         check self.externInit(serverUri, clientId, config);
     }
@@ -33,13 +33,31 @@ public client isolated class Client {
     #
     # + topic - Topic to publish the message to
     # + message - Message to publish
-    # + return - `mqtt:Error` if an error occurs while publishing
-    isolated remote function publish(string topic, Message message) returns Error? {
-        check self.externPublish(topic, message);
+    # + return - `mqtt:DeliveryToken` or else `mqtt:Error` if an error occurs while publishing
+    isolated remote function publish(string topic, Message message) returns DeliveryToken|Error {
+        return self.externPublish(topic, message);
     }
 
+    # Subscribes to a given topic in the request response scenario.
+    #
+    # + subscriptions - The topics to be subscribed to
+    # + return - `mqtt:Error` if an error occurs while subscribing or else `()`
+    isolated remote function subscribe(string|string[]|Subscription|Subscription[] subscriptions) returns Error? {
+        check self.externSubscribe(processSubscriptions(subscriptions));
+    }
+
+    # Receives messages from the server.
+    # 
+    # + T - Type of the stream to return
+    # + return - `stream<Message, error?>` or else`mqtt:Error` if an error occurs while receiving the response
+    isolated remote function receive(typedesc<stream<Message, error?>> T = <>) returns T|Error =
+    @java:Method {
+        name: "externReceive",
+        'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+    } external;
+
     # Closes the connection to the server.
-    # + return - `mqtt:Error` if an error occurs while closing
+    # + return - `mqtt:Error` if an error occurs while closing or else `()`
     isolated remote function close() returns Error? {
         check self.externClose();
     }
@@ -51,13 +69,13 @@ public client isolated class Client {
     }
 
     # Disconnects the client from the server.
-    # + return - `mqtt:Error` if an error occurs while disconnecting
+    # + return - `mqtt:Error` if an error occurs while disconnecting or else `()`
     isolated remote function disconnect() returns Error? {
         check self.externDisconnect();
     }
 
     # Reconnects the client to the server.
-    # + return - `mqtt:Error` if an error occurs while reconnecting
+    # + return - `mqtt:Error` if an error occurs while reconnecting or else `()`
     isolated remote function reconnect() returns Error? {
         check self.externReconnect();
     }
@@ -67,10 +85,15 @@ public client isolated class Client {
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
     } external;
 
-    private isolated function externPublish(string topic, Message message) returns Error? =
+    private isolated function externPublish(string topic, Message message) returns DeliveryToken|Error =
     @java:Method {
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
     } external;
+
+   private isolated function externSubscribe(Subscription[] subscriptions) returns Error? =
+   @java:Method {
+       'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
+   } external;
 
     private isolated function externClose() returns Error? =
     @java:Method {

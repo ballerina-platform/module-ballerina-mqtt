@@ -27,8 +27,11 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.crypto.nativeimpl.Decode;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
@@ -51,9 +54,11 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CERT_FILE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CLEAN_START;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CONNECTION_CONFIGURATION;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CONNECTION_TIMEOUT;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CORRELATION_DATA;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CRYPTO_TRUSTSTORE_PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CRYPTO_TRUSTSTORE_PATH;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.DEFAULT_TLS_PROTOCOL;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.ERROR_DETAILS;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.ERROR_NAME;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEEP_ALIVE_INTERVAL;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY;
@@ -62,13 +67,19 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_STORE_PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.KEY_STORE_PATH;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MAX_RECONNECT_DELAY;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MESSAGE_ID;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MESSAGE_PROPERTIES;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.NATIVE_DATA_PRIVATE_KEY;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.NATIVE_DATA_PUBLIC_KEY_CERTIFICATE;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PASSWORD;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PROTOCOL_NAME;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.PROTOCOL_VERSION;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.REASON_CODE;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RECORD_DELIVERY_TOKEN;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.RESPONSE_TOPIC;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.SECURE_SOCKET;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.SERVER_URIS;
+import static io.ballerina.stdlib.mqtt.utils.MqttConstants.TOPIC;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.USERNAME;
 
 /**
@@ -76,45 +87,100 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.USERNAME;
  */
 public class MqttUtils {
 
+    public static BMap<BString, Object> getBMqttMessage(MqttMessage message, String topic) {
+        BMap<BString, Object> bMessage = ValueCreator.createRecordValue(ModuleUtils.getModule(),
+                MqttConstants.RECORD_MESSAGE);
+        bMessage.put(StringUtils.fromString(MqttConstants.PAYLOAD),
+                ValueCreator.createArrayValue(message.getPayload()));
+        bMessage.put(StringUtils.fromString(MqttConstants.MESSAGE_ID), message.getId());
+        bMessage.put(StringUtils.fromString(MqttConstants.QOS), message.getQos());
+        bMessage.put(StringUtils.fromString(MqttConstants.RETAINED), message.isRetained());
+        bMessage.put(StringUtils.fromString(MqttConstants.DUPLICATE), message.isDuplicate());
+        bMessage.put(MqttConstants.TOPIC, StringUtils.fromString(topic));
+        MqttProperties properties = message.getProperties();
+        if (Objects.nonNull(properties)) {
+            BMap<BString, Object> bMessageProperties = ValueCreator.createRecordValue(ModuleUtils.getModule(),
+                    MqttConstants.RECORD_MESSAGE_PROPERTIES);
+            if (Objects.nonNull(properties.getResponseTopic())) {
+                bMessageProperties.put(RESPONSE_TOPIC,
+                        StringUtils.fromString(message.getProperties().getResponseTopic()));
+            }
+            if (Objects.nonNull(properties.getCorrelationData())) {
+                bMessageProperties.put(StringUtils.fromString(CORRELATION_DATA), ValueCreator.createArrayValue(
+                        message.getProperties().getCorrelationData()));
+            }
+            bMessage.put(MESSAGE_PROPERTIES, bMessageProperties);
+        }
+        return bMessage;
+    }
+
+    public static MqttMessage generateMqttMessage(BMap message) {
+        MqttProperties properties = new MqttProperties();
+        BMap bMessageProperties = message.getMapValue(MESSAGE_PROPERTIES);
+        if (Objects.nonNull(bMessageProperties)) {
+            if (bMessageProperties.containsKey(StringUtils.fromString(CORRELATION_DATA))) {
+                properties.setCorrelationData(bMessageProperties.getArrayValue(
+                        StringUtils.fromString(CORRELATION_DATA)).getByteArray());
+            }
+            if (bMessageProperties.containsKey(RESPONSE_TOPIC)) {
+                properties.setResponseTopic(bMessageProperties.getStringValue(RESPONSE_TOPIC).getValue());
+            }
+
+        }
+        MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setPayload(((BArray) message.get(StringUtils.fromString(MqttConstants.PAYLOAD))).getByteArray());
+        mqttMessage.setQos(((Long) message.get(StringUtils.fromString(MqttConstants.QOS))).intValue());
+        mqttMessage.setRetained(((boolean) message.get(StringUtils.fromString(MqttConstants.RETAINED))));
+        mqttMessage.setProperties(properties);
+        return mqttMessage;
+    }
+
+    public static BMap<BString, Object> getMqttDeliveryToken(IMqttToken token) {
+        BMap<BString, Object> bDeliveryToken = ValueCreator.createRecordValue(getModule(), RECORD_DELIVERY_TOKEN);
+        bDeliveryToken.put(StringUtils.fromString(MESSAGE_ID), token.getMessageId());
+        bDeliveryToken.put(TOPIC, StringUtils.fromString(token.getTopics()[0]));
+        return bDeliveryToken;
+    }
+
     public static MqttConnectionOptions getMqttConnectOptions(BMap<BString, Object> configuration) {
         MqttConnectionOptions options = new MqttConnectionOptions();
         Object connectionConfigObject = configuration.get(CONNECTION_CONFIGURATION);
-        if (connectionConfigObject != null && connectionConfigObject instanceof BMap) {
+        if (Objects.nonNull(connectionConfigObject) && connectionConfigObject instanceof BMap) {
             BMap<BString, Object> connectionConfig = (BMap<BString, Object>) connectionConfigObject;
             Object username = connectionConfig.get(USERNAME);
-            if (username != null) {
+            if (Objects.nonNull(username)) {
                 options.setUserName(((BString) username).getValue());
             }
             Object password = connectionConfig.get(PASSWORD);
-            if (password != null) {
+            if (Objects.nonNull(password)) {
                 options.setPassword(((BString) password).getValue().getBytes(StandardCharsets.UTF_8));
             }
             Object maxReconnectDelay = connectionConfig.get(MAX_RECONNECT_DELAY);
-            if (maxReconnectDelay != null) {
+            if (Objects.nonNull(maxReconnectDelay)) {
                 options.setMaxReconnectDelay(((Long) maxReconnectDelay).intValue());
             }
             Object keepAliveInterval = connectionConfig.get(KEEP_ALIVE_INTERVAL);
-            if (keepAliveInterval != null) {
+            if (Objects.nonNull(keepAliveInterval)) {
                 options.setKeepAliveInterval(((Long) keepAliveInterval).intValue());
             }
             Object connectionTimeout = connectionConfig.get(CONNECTION_TIMEOUT);
-            if (connectionTimeout != null) {
+            if (Objects.nonNull(connectionTimeout)) {
                 options.setConnectionTimeout(((Long) connectionTimeout).intValue());
             }
             Object cleanStart = connectionConfig.get(CLEAN_START);
-            if (cleanStart != null) {
+            if (Objects.nonNull(cleanStart)) {
                 options.setCleanStart((boolean) cleanStart);
             }
             Object serverUris = connectionConfig.get(SERVER_URIS);
-            if (serverUris != null) {
+            if (Objects.nonNull(serverUris)) {
                 options.setServerURIs(((BArray) serverUris).getStringArray());
             }
             Object automaticReconnect = connectionConfig.get(AUTOMATIC_RECONNECT);
-            if (automaticReconnect != null) {
+            if (Objects.nonNull(automaticReconnect)) {
                 options.setAutomaticReconnect((boolean) automaticReconnect);
             }
             Object secureSocket = connectionConfig.get(SECURE_SOCKET);
-            if (secureSocket != null) {
+            if (Objects.nonNull(secureSocket)) {
                 SocketFactory socketFactory = getSocketFactory((BMap<BString, Object>) secureSocket);
                 options.setSocketFactory(socketFactory);
             }
@@ -142,7 +208,7 @@ public class MqttUtils {
                 BMap<BString, BString> trustStore = (BMap<BString, BString>) bCert;
                 tmf = getTrustManagerFactory(trustStore);
             }
-            if (keyRecord != null) {
+            if (Objects.nonNull(keyRecord)) {
                 if (keyRecord.containsKey(CERT_FILE)) {
                     BString certFile = keyRecord.get(CERT_FILE);
                     BString keyFile = keyRecord.get(KEY_FILE);
@@ -237,11 +303,11 @@ public class MqttUtils {
 
     public static BError createMqttError(Exception exception) {
         Throwable cause = exception.getCause();
-        BMap<BString, Object> errorDetailMap = ValueCreator.createRecordValue(getModule(), "ErrorDetails");
+        BMap<BString, Object> errorDetailMap = ValueCreator.createRecordValue(getModule(), ERROR_DETAILS);
         if (exception instanceof MqttException) {
-            errorDetailMap.put(StringUtils.fromString("reasonCode"), ((MqttException) exception).getReasonCode());
+            errorDetailMap.put(REASON_CODE, ((MqttException) exception).getReasonCode());
         }
-        if (cause != null) {
+        if (Objects.nonNull(cause)) {
             return ErrorCreator.createError(getModule(), ERROR_NAME, StringUtils.fromString(exception.getMessage()),
                     ErrorCreator.createError(exception.getCause()), errorDetailMap);
         }
