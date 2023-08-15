@@ -47,7 +47,7 @@ public class ListenerActions {
                     .fromString(MqttConstants.MANUAL_ACKS));
             subscriber.setManualAcks(manualAcks);
             subscriber.connect(options);
-            clientObject.addNativeData(MqttConstants.CLIENT_OBJECT, subscriber);
+            clientObject.addNativeData(MqttConstants.MQTT_CLIENT, subscriber);
         } catch (BError e) {
             return e;
         } catch (Exception e) {
@@ -58,13 +58,13 @@ public class ListenerActions {
 
     public static Object externAttach(Environment environment, BObject clientObject, BObject service, Object topics) {
         clientObject.addNativeData("service", service);
-        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.CLIENT_OBJECT);
-        subscriber.setCallback(new MqttCallbackImpl(environment.getRuntime(), service, subscriber));
+        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
+        subscriber.setCallback(new MqttListenerCallbackImpl(environment, service, subscriber));
         return null;
     }
 
     public static Object externDetach(BObject clientObject, BObject service) {
-        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.CLIENT_OBJECT);
+        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         try {
             subscriber.disconnect();
         } catch (MqttException e) {
@@ -75,7 +75,7 @@ public class ListenerActions {
     }
 
     public static Object externStart(BObject clientObject, BArray subscriptions) {
-        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.CLIENT_OBJECT);
+        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         MqttSubscription[] mqttSubscriptions = new MqttSubscription[subscriptions.size()];
         for (int i = 0; i < subscriptions.size(); i++) {
             BMap topicSubscription = (BMap) subscriptions.getValues()[i];
@@ -91,9 +91,10 @@ public class ListenerActions {
     }
 
     public static Object externGracefulStop(BObject clientObject) {
-        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.CLIENT_OBJECT);
+        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         try {
             subscriber.disconnect();
+            subscriber.close();
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }
@@ -102,9 +103,10 @@ public class ListenerActions {
     }
 
     public static Object externImmediateStop(BObject clientObject) {
-        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.CLIENT_OBJECT);
+        MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         try {
             subscriber.disconnectForcibly();
+            subscriber.close();
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }

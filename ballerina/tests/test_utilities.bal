@@ -1,3 +1,19 @@
+// Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations
+// under the License.
+import ballerina/test;
 
 const NO_AUTH_ENDPOINT = "tcp://localhost:1883";
 const AUTH_ONLY_ENDPOINT = "tcp://localhost:1884";
@@ -73,12 +89,25 @@ final ConnectionConfiguration authMtlsConnConfig = {
     }
 };
 
-function stopListenerAndClient(Listener? 'listener = (), Client? 'client = ()) returns error? {
-    if 'client != () {
+final Listener[] listeners = [];
+final Client[] clients = [];
+
+function addListenerAndClientToArray(Listener? 'listener = (), Client? 'client = ()) {
+    if 'listener is Listener {
+        listeners.push('listener);
+    }
+    if 'client is Client {
+        clients.push('client);
+    }
+}
+
+@test:AfterSuite {alwaysRun: true}
+function closeAllListenersAndClients() returns error? {
+    foreach Listener 'listener in listeners {
+        check 'listener.gracefulStop();
+    }
+    foreach Client 'client in clients {
         check 'client->disconnect();
         check 'client->close();
-    }
-    if 'listener != () {
-        check 'listener.gracefulStop();
     }
 }

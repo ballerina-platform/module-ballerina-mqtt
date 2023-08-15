@@ -21,8 +21,17 @@ public client isolated class Caller {
 
     # Completes the received message.
     # 
-    # + return - `mqtt:Error` if the message cannot be completed
+    # + return - `mqtt:Error` if the message cannot be completed or else `()`
     isolated remote function complete() returns Error? =
+    @java:Method {
+        'class: "io.ballerina.stdlib.mqtt.caller.CallerActions"
+    } external;
+
+    # Send the response for the request message.
+    #
+    # + response - The response message to be sent
+    # + return - `mqtt:Error` if the message cannot be sent or `()`
+    isolated remote function respond(Message response) returns Error? =
     @java:Method {
         'class: "io.ballerina.stdlib.mqtt.caller.CallerActions"
     } external;
