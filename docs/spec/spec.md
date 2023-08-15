@@ -1,9 +1,9 @@
 # Specification: Ballerina MQTT Library
 
-_Owners_: @shafreenAnfar @dilanSachi
-_Reviewers_: @shafreenAnfar  
-_Created_: 2023/08/15    
-_Updated_: 2023/08/15   
+_Owners_: @shafreenAnfar @dilanSachi \
+_Reviewers_: @shafreenAnfar \
+_Created_: 2023/08/15 \
+_Updated_: 2023/08/15 \ 
 _Edition_: Swan Lake
 
 ## Introduction
