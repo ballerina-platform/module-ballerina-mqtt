@@ -20,6 +20,9 @@ import ballerina/jballerina.java;
 public client isolated class Caller {
 
     # Completes the received message.
+    # ```ballerina
+    # check caller->complete();
+    #```
     # 
     # + return - `mqtt:Error` if the message cannot be completed or else `()`
     isolated remote function complete() returns Error? =
@@ -28,6 +31,9 @@ public client isolated class Caller {
     } external;
 
     # Send the response for the request message.
+    # ```ballerina
+    # check caller->respond({payload: "Hello Response".toBytes()});
+    # ```
     #
     # + response - The response message to be sent
     # + return - `mqtt:Error` if the message cannot be sent or `()`

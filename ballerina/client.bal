@@ -20,6 +20,9 @@ import ballerina/jballerina.java;
 public client isolated class Client {
 
     # Creates a new `mqtt:Client`.
+    # ```ballerina
+    # mqtt:Client 'client = check new(mqtt:DEFAULT_URL, "client-unique-id");
+    # ```
     #
     # + serverUri - URI of the server to connect to
     # + clientId - Unique ID of the client
@@ -30,6 +33,9 @@ public client isolated class Client {
     }
 
     # Publishes a message to a topic.
+    # ```ballerina
+    # mqtt:DeliveryToken token = check 'client->publish("mqtt/topic", message);
+    # ```
     #
     # + topic - Topic to publish the message to
     # + message - Message to publish
@@ -39,6 +45,9 @@ public client isolated class Client {
     }
 
     # Subscribes to a given topic in the request response scenario.
+    # ```ballerina
+    # check 'client->subscribe([{topic: "mqtt/topic1", qos: 0}, {topic: "mqtt/topic2", qos: 1}]);
+    # ```
     #
     # + subscriptions - The topics to be subscribed to
     # + return - `mqtt:Error` if an error occurs while subscribing or else `()`
@@ -47,6 +56,9 @@ public client isolated class Client {
     }
 
     # Receives messages from the server.
+    # ```ballerina
+    # stream<mqtt:Message, error?> responseStream = check 'client->receive();
+    # ```
     # 
     # + T - Type of the stream to return
     # + return - `stream<Message, error?>` or else`mqtt:Error` if an error occurs while receiving the response
@@ -57,24 +69,40 @@ public client isolated class Client {
     } external;
 
     # Closes the connection to the server.
+    # ```ballerina
+    # check 'client->close();
+    # ```
+    #
     # + return - `mqtt:Error` if an error occurs while closing or else `()`
     isolated remote function close() returns Error? {
         check self.externClose();
     }
 
     # Checks if the client is connected to the server.
+    # ```ballerina
+    # boolean isConnected = check 'client->isConnected;
+    # ```
+    #
     # + return - `true` if the client is connected, `mqtt:Error` if an error occurs in the process
     isolated remote function isConnected() returns boolean|Error {
         return self.externIsConnected();
     }
 
     # Disconnects the client from the server.
+    # ```ballerina
+    # check 'client->disconnect();
+    # ```
+    #
     # + return - `mqtt:Error` if an error occurs while disconnecting or else `()`
     isolated remote function disconnect() returns Error? {
         check self.externDisconnect();
     }
 
     # Reconnects the client to the server.
+    # ```ballerina
+    # check 'client->reconnect();
+    # ```
+    #
     # + return - `mqtt:Error` if an error occurs while reconnecting or else `()`
     isolated remote function reconnect() returns Error? {
         check self.externReconnect();

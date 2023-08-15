@@ -22,6 +22,9 @@ public isolated client class Listener {
     private final Subscription[] & readonly mqttSubscriptions;
 
     # Creates a new `mqtt:Listener`.
+    # ```ballerina
+    # mqtt:Listener 'listener = check new(mqtt:DEFAULT_URL, "listener-unique-id", "mqtt/topic");
+    # ```
     #
     # + serverUri - The URI of the remote MQTT server
     # + clientId - The unique client ID to identify the listener
@@ -32,14 +35,9 @@ public isolated client class Listener {
         check self.externInit(serverUri, clientId, config);
     }
 
-    private isolated function externInit(string serverUri, string clientId, *ListenerConfiguration config) returns Error? =
-    @java:Method {
-        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
-    } external;
-
     # Starts the registered services.
     # ```ballerina
-    # error? result = listener.'start();
+    # error? result = 'listener.'start();
     # ```
     #
     # + return - A `error` if an error is encountered while starting the server or else `()`
@@ -47,14 +45,9 @@ public isolated client class Listener {
         check self.externStart(self.mqttSubscriptions);
     };
 
-    private isolated function externStart(Subscription[] topics) returns error? =
-    @java:Method {
-        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
-    } external;
-
     # Stops the MQTT listener gracefully.
     # ```ballerina
-    # error? result = listener.gracefulStop();
+    # error? result = 'listener.gracefulStop();
     # ```
     #
     # + return - A `error` if an error is encountered during the listener-stopping process or else `()`
@@ -66,7 +59,7 @@ public isolated client class Listener {
 
     # Stops the mqtt listener immediately.
     # ```ballerina
-    # error? result = listener.immediateStop();
+    # error? result = 'listener.immediateStop();
     # ```
     #
     # + return - A `error` if an error is encountered during the listener-stopping process or else `()`
@@ -78,7 +71,7 @@ public isolated client class Listener {
 
     # Attaches a service to the listener.
     # ```ballerina
-    # error? result = listener.attach(mqttService);
+    # error? result = 'listener.attach(mqttService);
     # ```
     #
     # + 'service - The service to be attached
@@ -92,7 +85,7 @@ public isolated client class Listener {
 
     # Detaches a consumer service from the listener.
     # ```ballerina
-    # error? result = listener.detach(mqttService);
+    # error? result = 'listener.detach(mqttService);
     # ```
     #
     # + 'service - The service to be detached
@@ -100,6 +93,16 @@ public isolated client class Listener {
     public isolated function detach(Service 'service) returns error? =
     @java:Method {
         name: "externDetach",
+        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
+    } external;
+
+    private isolated function externInit(string serverUri, string clientId, *ListenerConfiguration config) returns Error? =
+    @java:Method {
+        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
+    } external;
+
+    private isolated function externStart(Subscription[] topics) returns error? =
+    @java:Method {
         'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
     } external;
 }
