@@ -1,6 +1,6 @@
 # Specification: Ballerina MQTT Library
 
-_Owners_: @shafreenAnfar @dilanSachi    
+_Owners_: @shafreenAnfar @dilanSachi
 _Reviewers_: @shafreenAnfar  
 _Created_: 2023/08/15    
 _Updated_: 2023/08/15   
@@ -385,9 +385,6 @@ The Listener has the following functions to manage a service.
 * `attach()` - can be used to attach a service to the listener dynamically.
 ```ballerina
 # Attaches a service to the listener.
-# ```ballerina
-# error? result = listener.attach(mqttService);
-# ```
 #
 # + 'service - The service to be attached
 # + name - Name of the service
@@ -397,9 +394,6 @@ public isolated function attach(Service 'service, string[]|string? name = ()) re
 * `detach()` - can be used to detach a service from the listener.
 ```ballerina
 # Detaches a consumer service from the listener.
-# ```ballerina
-# error? result = listener.detach(mqttService);
-# ```
 #
 # + 'service - The service to be detached
 # + return - An `error` if an error is encountered while detaching a service or else `()`
@@ -408,9 +402,6 @@ public isolated function detach(Service 'service) returns error?;
 * `start()` - needs to be called to start the listener.
 ```ballerina
 # Starts the registered services.
-# ```ballerina
-# error? result = listener.'start();
-# ```
 #
 # + return - An `error` if an error is encountered while starting the server or else `()`
 public isolated function 'start() returns error?;
@@ -418,9 +409,6 @@ public isolated function 'start() returns error?;
 * `gracefulStop()` - can be used to gracefully stop the listener from consuming messages.
 ```ballerina
 # Stops the MQTT listener gracefully.
-# ```ballerina
-# error? result = listener.gracefulStop();
-# ```
 #
 # + return - An `error` if an error is encountered during the listener-stopping process or else `()`
 public isolated function gracefulStop() returns error?;
@@ -428,9 +416,6 @@ public isolated function gracefulStop() returns error?;
 * `immediateStop()` - can be used to immediately stop the listener from consuming messages.
 ```ballerina
 # Stops the mqtt listener immediately.
-# ```ballerina
-# error? result = listener.immediateStop();
-# ```
 #
 # + return - An `error` if an error is encountered during the listener-stopping process or else `()`
 public isolated function immediateStop() returns error?;
