@@ -151,13 +151,13 @@ isolated class StreamIterator {
     # Returns the next message in the stream.
     #
     # + return - `record{|Message value;|}` or else `error?` if the stream is closed or any error occurred while retrieving the next message
-    public isolated function next() returns record {|Message value;|}|error? {
+    public isolated function next() returns record {|Message value;|}|Error? {
         lock {
             if self.isClosed {
                 return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
             }
         }
-        Message|error? result = self.nextResult(self);
+        Message|Error? result = self.nextResult();
         if result is Message {
             return {value: result};
         }
@@ -171,19 +171,19 @@ isolated class StreamIterator {
         lock {
             if !self.isClosed {
                 self.isClosed = true;
-                return self.closeStream(self);
+                return self.closeStream();
             } else {
                 return error Error("Stream is closed. Therefore, no operations are allowed further on the stream.");
             }
         }
     }
 
-    isolated function nextResult(StreamIterator iterator) returns Message|error? =
+    isolated function nextResult() returns Message|Error? =
     @java:Method {
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
     } external;
 
-    isolated function closeStream(StreamIterator iterator) =
+    isolated function closeStream() =
     @java:Method {
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"
     } external;

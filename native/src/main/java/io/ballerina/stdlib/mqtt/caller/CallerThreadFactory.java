@@ -26,8 +26,8 @@ import java.util.concurrent.ThreadFactory;
 class CallerThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(Runnable runnable) {
-        Thread jmsConsumerThread = new Thread(runnable);
-        jmsConsumerThread.setName("bal-mqtt-caller-network-thread");
-        return jmsConsumerThread;
+        Thread mqttCallerThread = new Thread(runnable);
+        mqttCallerThread.setName("bal-mqtt-caller-network-thread");
+        return mqttCallerThread;
     }
 }
