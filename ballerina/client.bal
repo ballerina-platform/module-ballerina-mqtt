@@ -49,7 +49,7 @@ public client isolated class Client {
     isolated remote function isConnected() returns boolean|Error {
         return self.externIsConnected();
     }
-    
+
     # Disconnects the client from the server.
     # + return - `mqtt:Error` if an error occurs while disconnecting
     isolated remote function disconnect() returns Error? {
