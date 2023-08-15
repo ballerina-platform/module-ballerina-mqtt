@@ -50,7 +50,7 @@ public client isolated class Client {
     # 
     # + T - Type of the stream to return
     # + return - `stream<Message, error?>` or else`mqtt:Error` if an error occurs while receiving the response
-    isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|Error =
+    isolated remote function receive(typedesc<stream<Message, error?>> T = <>) returns T|Error =
     @java:Method {
         name: "externReceive",
         'class: "io.ballerina.stdlib.mqtt.client.ClientActions"

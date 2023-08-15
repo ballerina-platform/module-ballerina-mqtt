@@ -56,7 +56,7 @@ function basicRequestResponseTest() returns error? {
     _ = check 'client->publish("mqtt/request/basicreqrestest", {payload: message.toBytes(), properties: {responseTopic: "mqtt/response/basicreqrestest"}});
     runtime:sleep(1);
 
-    stream<Message, error?> respStream = check 'client->receiveResponse();
+    stream<Message, error?> respStream = check 'client->receive();
     record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
     test:assertEquals("Response for Test message for basic req res test", check string:fromBytes(val.value.payload));
     test:assertTrue(completedTokens.indexOf(<string>val.value.topic) != ());
@@ -82,7 +82,7 @@ function basicRequestResponseMultipleListenersTest() returns error? {
     _ = check 'client->publish("mqtt/request/reqmultiplerestest", {payload: message.toBytes(), properties: {responseTopic: "mqtt/response/reqmultiplerestest"}});
     runtime:sleep(1);
 
-    stream<Message, error?> respStream = check 'client->receiveResponse();
+    stream<Message, error?> respStream = check 'client->receive();
     record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
     test:assertEquals("Response for Test message for req with multiple res test", check string:fromBytes(val.value.payload));
     val = <record {|Message value;|}>check respStream.next();
@@ -116,11 +116,11 @@ function basicRequestResponseMultiplePublishersTest() returns error? {
 
     runtime:sleep(1);
 
-    stream<Message, error?> respStream1 = check 'client1->receiveResponse();
+    stream<Message, error?> respStream1 = check 'client1->receive();
     record {|Message value;|} val1 = <record {|Message value;|}>check respStream1.next();
-    stream<Message, error?> respStream2 = check 'client2->receiveResponse();
+    stream<Message, error?> respStream2 = check 'client2->receive();
     record {|Message value;|} val2 = <record {|Message value;|}>check respStream2.next();
-    stream<Message, error?> respStream3 = check 'client3->receiveResponse();
+    stream<Message, error?> respStream3 = check 'client3->receive();
     record {|Message value;|} val3 = <record {|Message value;|}>check respStream3.next();
 
     addListenerAndClientToArray('listener, 'client1);
@@ -150,7 +150,7 @@ function requestResponseAsynchronousTest() returns error? {
     _ = check 'client->publish("mqtt/request/asyncreqrestest", {payload: message.toBytes(), properties: {responseTopic: "mqtt/response/asyncreqrestest"}});
     _ = check 'client->publish("mqtt/request/asyncreqrestest", {payload: message.toBytes(), properties: {responseTopic: "mqtt/response/asyncreqrestest"}});
 
-    stream<Message, error?> respStream = check 'client->receiveResponse();
+    stream<Message, error?> respStream = check 'client->receive();
     future<error?> f = start readResponse(respStream, receivedValues);
     runtime:sleep(1);
     f.cancel();
@@ -177,7 +177,7 @@ function requestResponseWithCorrelationDataTest() returns error? {
     _ = check 'client->publish("mqtt/request/correlationdatareqrestest", {payload: (message + " 2").toBytes(), properties: {responseTopic: "mqtt/response/correlationdatareqrestest", correlationData: "cdata2".toBytes()}});
     _ = check 'client->publish("mqtt/request/correlationdatareqrestest", {payload: (message + " 3").toBytes(), properties: {responseTopic: "mqtt/response/correlationdatareqrestest", correlationData: "cdata3".toBytes()}});
 
-    stream<Message, error?> respStream = check 'client->receiveResponse();
+    stream<Message, error?> respStream = check 'client->receive();
     record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
     test:assertEquals(val.value.payload, "Response for Test message for async req res test 1".toBytes());
     test:assertEquals(val.value.properties?.correlationData, "cdata1".toBytes());
@@ -216,7 +216,7 @@ function closeReceiveStreamTest() returns error? {
     runtime:sleep(1);
     addListenerAndClientToArray('listener, 'client);
 
-    stream<Message, error?> respStream = check 'client->receiveResponse();
+    stream<Message, error?> respStream = check 'client->receive();
     record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
     test:assertEquals(check string:fromBytes(val.value.payload), "Response for Test message for close receive stream topic");
     check respStream.close();
@@ -241,7 +241,7 @@ function closeClosedReceiveStreamTest() returns error? {
     runtime:sleep(1);
     addListenerAndClientToArray('listener, 'client);
 
-    stream<Message, error?> respStream = check 'client->receiveResponse();
+    stream<Message, error?> respStream = check 'client->receive();
     record {|Message value;|} val = <record {|Message value;|}>check respStream.next();
     test:assertEquals(check string:fromBytes(val.value.payload), "Response for Test message for close receive stream topic");
     check respStream.close();
