@@ -60,7 +60,6 @@ public class MqttServiceValidator {
                     serviceDeclarationNode.location()));
         }
 
-        validateAnnotation(context);
         FunctionDefinitionNode onMessage = null;
         FunctionDefinitionNode onError = null;
 
@@ -87,19 +86,5 @@ public class MqttServiceValidator {
             }
         }
         new MqttFunctionValidator(context, onMessage, onError).validate();
-    }
-
-    private void validateAnnotation(SyntaxNodeAnalysisContext context) {
-        SemanticModel semanticModel = context.semanticModel();
-        ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
-        Optional<Symbol> symbol = semanticModel.symbol(serviceDeclarationNode);
-        if (symbol.isPresent()) {
-            ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) symbol.get();
-            List<AnnotationSymbol> symbolList = serviceDeclarationSymbol.annotations();
-            if (!symbolList.isEmpty()) {
-                context.reportDiagnostic(PluginUtils.getDiagnostic(PluginConstants.CompilationErrors.INVALID_ANNOTATION,
-                        DiagnosticSeverity.ERROR, serviceDeclarationNode.location()));
-            }
-        }
     }
 }
