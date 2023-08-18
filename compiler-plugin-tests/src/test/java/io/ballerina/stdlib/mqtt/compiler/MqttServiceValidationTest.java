@@ -108,7 +108,7 @@ public class MqttServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errors().size(), 0);
     }
 
-    @Test(enabled = true, description = "Validate resource functions with onError")
+    @Test(enabled = true, description = "Validate service with annotation")
     public void testValidService7() {
         Package currentPackage = loadPackage("valid_service_7");
         PackageCompilation compilation = currentPackage.getCompilation();
