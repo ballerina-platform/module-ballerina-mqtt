@@ -109,29 +109,6 @@ task startMqttServer() {
     }
 }
 
-task stopMqttServer() {
-    doLast {
-        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
-            def stdOut = new ByteArrayOutputStream()
-            exec {
-                commandLine 'sh', '-c', "docker ps --filter name=mqtt-test"
-                standardOutput = stdOut
-            }
-            if (stdOut.toString().contains("mqtt-test")) {
-                println "Stopping Mqtt server."
-                exec {
-                    commandLine 'sh', '-c', "docker-compose -f tests/resources/docker-compose.yaml rm -svf"
-                    standardOutput = stdOut
-                }
-                println stdOut.toString()
-                sleep(5 * 1000)
-            } else {
-                println "Mqtt server is not started."
-            }
-        }
-    }
-}
-
 publishing {
     publications {
         maven(MavenPublication) {
@@ -154,7 +131,6 @@ publishing {
 updateTomlFiles.dependsOn copyStdlibs
 
 test.dependsOn startMqttServer
-build.finalizedBy stopMqttServer
 
 build.dependsOn ":mqtt-native:build"
 build.dependsOn ":${packageName}-compiler-plugin:build"

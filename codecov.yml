@@ -1,5 +1,6 @@
 ignore:
   - "compiler-plugin-tests"
+  - "examples"
 
 coverage:
   precision: 2
