@@ -100,7 +100,7 @@ service /mqtt on new http:Listener(9100) {
 function publishMessages() returns error? {
     startedTime = time:utcNow();
     // Publishing messages for 1 hour
-    int endingTimeInSecs = startedTime[0] + 20;
+    int endingTimeInSecs = startedTime[0] + 3600;
     mqtt:Client 'client = check new(MQTT_CLUSTER, uuid:createType1AsString());
     while time:utcNow()[0] <= endingTimeInSecs {
         mqtt:DeliveryToken|error result = 'client->publish(TOPIC, {
