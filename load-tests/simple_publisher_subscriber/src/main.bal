@@ -48,24 +48,6 @@ boolean finished = false;
 
 service /mqtt on new http:Listener(9100) {
 
-    // public function init() {
-    //     log:printInfo("Load test service initializing.");
-    //     error? result = startListener();
-    //     if result is error {
-    //         log:printInfo("Error occurred while starting the listener. " + result.message());
-    //         panic result;
-    //     }
-    //     log:printInfo("Listener started.");
-    //     errorCount = 0;
-    //     sentCount = 0;
-    //     receivedCount = 0;
-    //     startedTime = time:utcNow();
-    //     endedTime = time:utcNow();
-    //     finished = false;
-    //     _ = start publishMessages();
-    //     log:printInfo("Started publishing messages.");
-    // }
-
     resource function get publish() returns boolean {
         log:printInfo("Received request to start publishing messages.");
         error? result = startListener();
