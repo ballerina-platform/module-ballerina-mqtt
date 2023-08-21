@@ -8,7 +8,7 @@ _Edition_: Swan Lake
 
 ## Introduction
 This is the specification for the MQTT standard library of [Ballerina language](https://ballerina.io/), which can send and receive messages 
-by connecting to a MQTT broker.
+by connecting to an MQTT broker.
 
 The MQTT library specification has evolved and may continue to evolve in the future. The released versions of the 
 specification can be found under the relevant GitHub tag.
@@ -18,7 +18,7 @@ If you have any feedback or suggestions about the library, start a discussion vi
 feedback is always welcome. Any accepted proposal, which affects the specification is stored under `/docs/proposals`. Proposals 
 under discussion can be found with the label `type/proposal` in GitHub.
 
-The conforming implementation of the specification is released to Ballerina central. Any deviation from the specification 
+The conforming implementation of the specification is released to Ballerina Central. Any deviation from the specification 
 is considered a bug.
 
 ## Contents
@@ -44,12 +44,12 @@ is considered a bug.
     *  4.4. [Caller](#44-caller)
 
 ## 1. Overview
-MQTT is a lightweight, publish-subscribe, machine to machine network protocol for message queue/message queuing service.
+MQTT is a lightweight, publish-subscribe, machine-to-machine network protocol for message queue/message queuing service.
 This specification elaborates on the usage of MQTT clients that connect and interact with the MQTT broker. These clients 
 allow publishing and subscribing messages to and from the MQTT broker with resource constraints or limited network 
 bandwidth, such as in the Internet of Things.
 
-Ballerina MQTT supports MQTTv5. Currently, it contains two core apis:
+Ballerina MQTT supports MQTTv5. Currently, it contains two core APIs:
 * Client - Used to publish messages to the MQTT broker.
 * Listener - Used to get the messages from the MQTT broker.
 
@@ -80,7 +80,7 @@ public type SecureSocket record {|
     |} protocol?;
 |};
 ```
-* In order to authenticate the client with the MQTT broker, the `username` and `password` fields of 
+* To authenticate the client with the MQTT broker, the `username` and `password` fields of 
 `mqtt:ConnectionConfiguration` can be used.
 
 ### 2.2. ConnectionConfiguration
@@ -130,7 +130,7 @@ public type Message record {|
 * `mqtt:MessageProperties` represents the additional properties of the message.
 ```ballerina
 public type MessageProperties record {|
-    # The topic to send the response to in reqeust response scenario
+    # The topic to send the response to in the request response scenario
     string responseTopic?;
     # The correlation data to uniquely identify the message
     byte[] correlationData?;
@@ -160,7 +160,7 @@ public type Subscription record {|
 The `mqtt:Client` allows applications to publish messages to a MQTT broker. A connection with the MQTT broker can be 
 established insecurely or securely.
 ### 3.1. Configurations
-* When initializing the client, following configurations can be provided.
+* When initializing the client, the following configurations can be provided.
 ```ballerina
 public type ClientConfiguration record {|
     # The related connection configuration
@@ -180,7 +180,7 @@ public type WillDetails record {|
 ```
 ### 3.2. Initialization
 #### 3.2.1. Insecure Client
-A simple insecure client can be initialized by providing the MQTT broker url and a unique id to identify the client.
+A simple insecure client can be initialized by providing the MQTT broker URL and a unique id to identify the client.
 ```ballerina
 # Creates a new `mqtt:Client`.
 #
@@ -192,11 +192,11 @@ public isolated function init(string serverUri, string clientId, *ClientConfigur
 ```
 #### 3.2.2. Secure Client
 A secure client can be initialized by providing either a `crypto:Truststore` or a certificate file to the
-`mqtt:SecureSocket` and providing it as the `mqtt:ConnectionConfiguration` to client. Additionally, a `crypto:Keystore` 
+`mqtt:SecureSocket` and providing it as the `mqtt:ConnectionConfiguration` to the client. Additionally, a `crypto:Keystore` 
 or a `mqtt:CertKey` can also be provided in order to ensure two-way secure communication.
 
-Above only provides the configurations related to secure communication. In order to authenticate the client with the broker, 
-the `username` and `password` needs to provided in the `mqtt:ConnectionConfiguration`.
+The above only provides the configurations related to secure communication. To authenticate the client with the broker, 
+the `username` and `password` needs to be provided in the `mqtt:ConnectionConfiguration`.
 ```ballerina
 mqtt:ConnectionConfiguration connConfig = {
     username: "username",
@@ -225,7 +225,7 @@ mqtt:ClientConfiguration clientConfig = {
 # + return - `mqtt:DeliveryToken` or else `mqtt:Error` if an error occurs while publishing
 isolated remote function publish(string topic, mqtt:Message message) returns mqtt:DeliveryToken|mqtt:Error;
 ```
-* In order to disconnect the client's connection with the broker, the `disconnect()` method can be used.
+* To disconnect the client's connection with the broker, the `disconnect()` method can be used.
 ```ballerina
 # Disconnects the client from the server.
 #
@@ -256,7 +256,7 @@ isolated remote function close() returns mqtt:Error?;
 * In the request/response scenario, the client can publish a message to a topic and wait for a response from a subscriber 
 by subscribing to a response topic. To subscribe to a response topic, the `subscribe()` method can be used.
 ```ballerina
-# Subscribes to a given topic in the request response scenario.
+# Subscribes to a given topic in the request-response scenario.
 #
 # + subscriptions - The topics to be subscribed to
 # + return - `mqtt:Error` if an error occurs while subscribing or else `()`
@@ -272,7 +272,7 @@ of `mqtt:Message`s and the publisher can asynchronously iterate through the stre
 isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|Error;
 ```
 
-A sample usage of the client API in the request/response scenario is as follows.
+Sample usage of the client API in the request/response scenario is as follows.
 ```ballerina
 import ballerina/mqtt;
 import ballerina/uuid;
@@ -317,7 +317,7 @@ function readResponses(stream<mqtt:Message, error?> respStream) returns error? {
 ```
 ## 4. Subscriber
 The subscriber allows applications to read messages from different topics in the MQTT broker. `mqtt:Listener` is used as 
-a subscriber which requires a `mqtt:Service` in order to handle the incoming messages.
+a subscriber which requires a `mqtt:Service` to handle the incoming messages.
 ### 4.1. Configurations
 * When initializing the `mqtt:Listener`, following configurations can be provided.
 ```ballerina
@@ -329,10 +329,10 @@ public type ListenerConfiguration record {|
 |};
 ```
 ### 4.2. Initialization
-A `mqtt:Listener` can be established insecurely or securely as same as the `mqtt:Client`.
+An `mqtt:Listener` can be established insecurely or securely as same as the `mqtt:Client`.
 #### 4.2.1. Insecure Listener
 A simple insecure connection with the MQTT broker can be easily established by providing the MQTT broker URL, a unique 
-id and the subscriptions as the input parameters.
+id, and the subscriptions as the input parameters.
 ```ballerina
 # Creates a new `mqtt:Listener`.
 #
@@ -396,7 +396,7 @@ remote function onMessage(mqtt:Message message, mqtt:Caller caller) returns erro
     // process results
 }
 ```
-This is a mandatory remote function which is invoked when the listener receives messages from the MQTT broker. 
+This is a mandatory remote function that is invoked when the listener receives messages from the MQTT broker. 
 Any errors returning from this function will be logged to the console.
 
 * `onError`
@@ -405,7 +405,7 @@ remote function onError(mqtt:Error err) returns error? {
     // process error
 } 
 ```
-This is an optional remote function which is invoked when an error occurs when invoking the `onMessage` method. If the 
+This is an optional remote function that is invoked when an error occurs when invoking the `onMessage` method. If the 
 method is not implemented, the error will be logged to the console. Any errors returning from this function will be 
 logged to the console.
 
@@ -415,8 +415,8 @@ remote function onComplete(mqtt:DeliveryToken token) returns error? {
     // handle the delivery token
 }
 ```
-This is an optional remote function which is invoked when the message is successfully delivered to the MQTT broker in 
-the request response scenario.
+This is an optional remote function that is invoked when the message is successfully delivered to the MQTT broker in 
+the request-response scenario.
 
 The Listener has the following functions to manage a service.
 * `attach()` - can be used to attach a service to the listener dynamically.
@@ -460,7 +460,7 @@ public isolated function immediateStop() returns error?;
 
 ### 4.4. Caller
 `mqtt:Caller` is provided as a parameter to the `onMessage` remote function. It can be used to send a response back to 
-the publisher in request/response scenario or acknowledge the message when in `manualAcks` mode.
+the publisher in the request-response scenario or acknowledge the message when in `manualAcks` mode.
 * `complete()` - can be used to acknowledge the message in `manualAcks` mode.
 ```ballerina
 # Completes the received message.
@@ -468,10 +468,10 @@ the publisher in request/response scenario or acknowledge the message when in `m
 # + return - `mqtt:Error` if the message cannot be completed or else `()`
 isolated remote function complete() returns Error?;
 ```
-This will internally use the message id of the message to acknowledge the message.
-* `respond()` - can be used to send a response back to the publisher in request/response scenario.
+This will internally use the message-id of the message to acknowledge the message.
+* `respond()` - can be used to send a response back to the publisher in request-response scenario.
 ```ballerina
-# Send the response for the request message.
+# Send the response to the request message.
 #
 # + response - The response message to be sent
 # + return - `mqtt:Error` if the message cannot be sent or `()`
@@ -479,7 +479,7 @@ isolated remote function respond(mqtt:Message response) returns mqtt:Error?;
 ```
 This will internally read the response topic sent by the publisher and send the response to that topic.
 
-A sample usage of the listener in the request/response scenario is as follows.
+Sample usage of the listener in the request/response scenario is as follows.
 ```ballerina
 import ballerina/uuid;
 import ballerina/log;
