@@ -19,10 +19,11 @@ import ballerina/lang.runtime;
 import ballerina/lang.value;
 import ballerina/mqtt;
 import ballerina/time;
+import ballerina/log;
 import ballerina/uuid;
 
 const string TOPIC = "mqtt/perf-topic";
-const string MQTT_CLUSTER = "mosquitto:1883";
+const string MQTT_CLUSTER = "tcp://mosquitto:1883";
 
 Payload SENDING_MESSAGE = {
     id: 12501,
@@ -47,8 +48,28 @@ boolean finished = false;
 
 service /mqtt on new http:Listener(9100) {
 
+    // public function init() {
+    //     log:printInfo("Load test service initializing.");
+    //     error? result = startListener();
+    //     if result is error {
+    //         log:printInfo("Error occurred while starting the listener. " + result.message());
+    //         panic result;
+    //     }
+    //     log:printInfo("Listener started.");
+    //     errorCount = 0;
+    //     sentCount = 0;
+    //     receivedCount = 0;
+    //     startedTime = time:utcNow();
+    //     endedTime = time:utcNow();
+    //     finished = false;
+    //     _ = start publishMessages();
+    //     log:printInfo("Started publishing messages.");
+    // }
+
     resource function get publish() returns boolean {
+        log:printInfo("Received request to start publishing messages.");
         error? result = startListener();
+        log:printInfo("Started listener.");
         if result is error {
             return false;
         }
@@ -59,6 +80,7 @@ service /mqtt on new http:Listener(9100) {
         endedTime = time:utcNow();
         finished = false;
         _ = start publishMessages();
+        log:printInfo("Started publishing messages.");
         return true;
     }
 
@@ -91,6 +113,7 @@ function publishMessages() returns error? {
         } else {
             sentCount +=1;
         }
+        runtime:sleep(0.1);
     }
     mqtt:DeliveryToken|error result = 'client->publish(TOPIC, {
         payload: FINAL_MESSAGE.toJsonString().toBytes()
@@ -105,7 +128,7 @@ function publishMessages() returns error? {
 }
 
 function startListener() returns error? {
-    mqtt:Listener mqttSubscriber = check new (mqtt:DEFAULT_URL, uuid:createType1AsString(), TOPIC);
+    mqtt:Listener mqttSubscriber = check new (MQTT_CLUSTER, uuid:createType1AsString(), TOPIC);
     check mqttSubscriber.attach(mqttService);
     check mqttSubscriber.start();
     runtime:registerListener(mqttSubscriber);
