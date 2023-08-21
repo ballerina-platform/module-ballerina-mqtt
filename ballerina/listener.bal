@@ -22,6 +22,9 @@ public isolated client class Listener {
     private final Subscription[] & readonly mqttSubscriptions;
 
     # Creates a new `mqtt:Listener`.
+    # ```ballerina
+    # mqtt:Listener 'listener = check new(mqtt:DEFAULT_URL, "listener-unique-id", "mqtt/topic");
+    # ```
     #
     # + serverUri - The URI of the remote MQTT server
     # + clientId - The unique client ID to identify the listener
@@ -32,33 +35,23 @@ public isolated client class Listener {
         check self.externInit(serverUri, clientId, config);
     }
 
-    private isolated function externInit(string serverUri, string clientId, *ListenerConfiguration config) returns Error? =
-    @java:Method {
-        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
-    } external;
-
     # Starts the registered services.
     # ```ballerina
-    # error? result = listener.'start();
+    # mqtt:Error? result = 'listener.'start();
     # ```
     #
     # + return - A `error` if an error is encountered while starting the server or else `()`
-    public isolated function 'start() returns error? {
+    public isolated function 'start() returns Error? {
         check self.externStart(self.mqttSubscriptions);
     };
 
-    private isolated function externStart(Subscription[] topics) returns error? =
-    @java:Method {
-        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
-    } external;
-
     # Stops the MQTT listener gracefully.
     # ```ballerina
-    # error? result = listener.gracefulStop();
+    # mqtt:Error? result = 'listener.gracefulStop();
     # ```
     #
     # + return - A `error` if an error is encountered during the listener-stopping process or else `()`
-    public isolated function gracefulStop() returns error?  =
+    public isolated function gracefulStop() returns Error?  =
     @java:Method {
         name: "externGracefulStop",
         'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
@@ -66,11 +59,11 @@ public isolated client class Listener {
 
     # Stops the mqtt listener immediately.
     # ```ballerina
-    # error? result = listener.immediateStop();
+    # mqtt:Error? result = 'listener.immediateStop();
     # ```
     #
     # + return - A `error` if an error is encountered during the listener-stopping process or else `()`
-    public isolated function immediateStop() returns error? =
+    public isolated function immediateStop() returns Error? =
     @java:Method {
         name: "externImmediateStop",
         'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
@@ -78,13 +71,13 @@ public isolated client class Listener {
 
     # Attaches a service to the listener.
     # ```ballerina
-    # error? result = listener.attach(mqttService);
+    # mqtt:Error? result = 'listener.attach(mqttService);
     # ```
     #
     # + 'service - The service to be attached
     # + name - Name of the service
     # + return - A `error` if an error is encountered while attaching the service or else `()`
-    public isolated function attach(Service 'service, string[]|string? name = ()) returns error? =
+    public isolated function attach(Service 'service, string[]|string? name = ()) returns Error? =
     @java:Method {
         name: "externAttach",
         'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
@@ -92,14 +85,24 @@ public isolated client class Listener {
 
     # Detaches a consumer service from the listener.
     # ```ballerina
-    # error? result = listener.detach(mqttService);
+    # mqtt:Error? result = 'listener.detach(mqttService);
     # ```
     #
     # + 'service - The service to be detached
     # + return - A `error` if an error is encountered while detaching a service or else `()`
-    public isolated function detach(Service 'service) returns error? =
+    public isolated function detach(Service 'service) returns Error? =
     @java:Method {
         name: "externDetach",
+        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
+    } external;
+
+    private isolated function externInit(string serverUri, string clientId, *ListenerConfiguration config) returns Error? =
+    @java:Method {
+        'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
+    } external;
+
+    private isolated function externStart(Subscription[] topics) returns Error? =
+    @java:Method {
         'class: "io.ballerina.stdlib.mqtt.listener.ListenerActions"
     } external;
 }
