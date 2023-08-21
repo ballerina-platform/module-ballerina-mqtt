@@ -37,7 +37,7 @@ public isolated client class Listener {
 
     # Starts the registered services.
     # ```ballerina
-    # error? result = 'listener.'start();
+    # mqtt:Error? result = 'listener.'start();
     # ```
     #
     # + return - A `error` if an error is encountered while starting the server or else `()`
@@ -47,7 +47,7 @@ public isolated client class Listener {
 
     # Stops the MQTT listener gracefully.
     # ```ballerina
-    # error? result = 'listener.gracefulStop();
+    # mqtt:Error? result = 'listener.gracefulStop();
     # ```
     #
     # + return - A `error` if an error is encountered during the listener-stopping process or else `()`
@@ -59,7 +59,7 @@ public isolated client class Listener {
 
     # Stops the mqtt listener immediately.
     # ```ballerina
-    # error? result = 'listener.immediateStop();
+    # mqtt:Error? result = 'listener.immediateStop();
     # ```
     #
     # + return - A `error` if an error is encountered during the listener-stopping process or else `()`
@@ -71,7 +71,7 @@ public isolated client class Listener {
 
     # Attaches a service to the listener.
     # ```ballerina
-    # error? result = 'listener.attach(mqttService);
+    # mqtt:Error? result = 'listener.attach(mqttService);
     # ```
     #
     # + 'service - The service to be attached
@@ -85,7 +85,7 @@ public isolated client class Listener {
 
     # Detaches a consumer service from the listener.
     # ```ballerina
-    # error? result = 'listener.detach(mqttService);
+    # mqtt:Error? result = 'listener.detach(mqttService);
     # ```
     #
     # + 'service - The service to be detached
