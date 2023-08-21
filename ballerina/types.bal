@@ -115,8 +115,8 @@ public type DeliveryToken record {|
 
 # Configurations for secure communication with the MQTT server.
 #
-# + cert - Certificate file that the client trusts
-# + key - Combination of certificate and private key of the client
+# + cert - Certificate file that the client trusts or a `crypto:TrustStore`
+# + key - Combination of certificate and private key of the client or a `crypto:KeyStore`
 # + protocol - Related protocol
 public type SecureSocket record {|
     crypto:TrustStore|string cert?;
