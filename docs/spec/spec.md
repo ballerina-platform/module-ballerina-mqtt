@@ -188,7 +188,7 @@ A simple insecure client can be initialized by providing the MQTT broker URL and
 # + clientId - Unique ID of the client
 # + config - Optional configuration values to use for the client
 # + return - `mqtt:Error` if an error occurs while creating the client or else `()`
-public isolated function init(string serverUri, string clientId, *ClientConfiguration config) returns Error? {
+public isolated function init(string serverUri, string clientId, *mqtt:ClientConfiguration config) returns mqtt:Error? {
 ```
 #### 3.2.2. Secure Client
 A secure client can be initialized by providing either a `crypto:Truststore` or a certificate file to the
@@ -269,7 +269,7 @@ of `mqtt:Message`s and the publisher can asynchronously iterate through the stre
 #
 # + T - Type of the stream to return
 # + return - `stream<Message, error?>` or else`mqtt:Error` if an error occurs while receiving the response
-isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|Error;
+isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|mqtt:Error;
 ```
 
 Sample usage of the client API in the request/response scenario is as follows.
