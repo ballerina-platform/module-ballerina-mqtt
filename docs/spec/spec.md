@@ -426,7 +426,7 @@ The Listener has the following functions to manage a service.
 # + 'service - The service to be attached
 # + name - Name of the service
 # + return - An `error` if an error is encountered while attaching the service or else `()`
-public isolated function attach(Service 'service, string[]|string? name = ()) returns error?;
+public isolated function attach(Service 'service, string[]|string? name = ()) returns mqtt:Error?;
 ```
 * `detach()` - can be used to detach a service from the listener.
 ```ballerina
@@ -434,28 +434,28 @@ public isolated function attach(Service 'service, string[]|string? name = ()) re
 #
 # + 'service - The service to be detached
 # + return - An `error` if an error is encountered while detaching a service or else `()`
-public isolated function detach(Service 'service) returns error?;
+public isolated function detach(Service 'service) returns mqtt:Error?;
 ```
 * `start()` - needs to be called to start the listener.
 ```ballerina
 # Starts the registered services.
 #
 # + return - An `error` if an error is encountered while starting the server or else `()`
-public isolated function 'start() returns error?;
+public isolated function 'start() returns mqtt:Error?;
 ```
 * `gracefulStop()` - can be used to gracefully stop the listener from consuming messages.
 ```ballerina
 # Stops the MQTT listener gracefully.
 #
 # + return - An `error` if an error is encountered during the listener-stopping process or else `()`
-public isolated function gracefulStop() returns error?;
+public isolated function gracefulStop() returns mqtt:Error?;
 ```
 * `immediateStop()` - can be used to immediately stop the listener from consuming messages.
 ```ballerina
 # Stops the mqtt listener immediately.
 #
 # + return - An `error` if an error is encountered during the listener-stopping process or else `()`
-public isolated function immediateStop() returns error?;
+public isolated function immediateStop() returns mqtt:Error?;
 ```
 
 ### 4.4. Caller
@@ -466,7 +466,7 @@ the publisher in request/response scenario or acknowledge the message when in `m
 # Completes the received message.
 # 
 # + return - `mqtt:Error` if the message cannot be completed or else `()`
-isolated remote function complete() returns Error?;
+isolated remote function complete() returns mqtt:Error?;
 ```
 This will internally use the message id of the message to acknowledge the message.
 * `respond()` - can be used to send a response back to the publisher in request/response scenario.
