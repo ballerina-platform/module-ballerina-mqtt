@@ -26,13 +26,6 @@ def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def examples = ["temperature-sensor/temperature-publisher", "temperature-sensor/temperature-analyzer"]
 def packageName = "mqtt"
 
-dependencies {
-    implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
-    implementation group: 'org.ballerinalang', name: 'ballerina-tools-api', version: "${ballerinaLangVersion}"
-    implementation group: 'org.ballerinalang', name: 'ballerina-parser', version: "${ballerinaLangVersion}"
-    implementation group: 'org.testng', name: 'testng', version: "${testngVersion}"
-}
-
 clean {
     examples.forEach { example ->
         delete "${projectDir}/${example}/target"
