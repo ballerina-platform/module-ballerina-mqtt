@@ -49,7 +49,7 @@ isolated service on new mqtt:Listener(mqtt:DEFAULT_URL, uuid:createType1AsString
     }
 }
 
-public type TemperatureDetails record {|
+type TemperatureDetails record {|
     string deviceId;
     float temperature;
     time:Utc timestamp;
