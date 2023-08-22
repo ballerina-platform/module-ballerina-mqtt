@@ -4,8 +4,8 @@
 
 _Authors_: @shafreenAnfar @dilanSachi \
 _Reviewers_: @shafreenAnfar \
-_Created_: 2023/08/21 \
-_Updated_: 2023/08/21
+_Created_: 2023/08/22 \
+_Updated_: 2023/08/22
 
 ## Overview
 In this example, an `mqtt:Client` publishes temperature details of a device from time to time. An `mqtt:Listener` 

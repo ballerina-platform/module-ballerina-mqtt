@@ -33,6 +33,7 @@ public function main() returns error? {
         retained: true
     });
     io:println(string `Published starting temperature of the device: ${startingTemperature.toJsonString()} at ${time:utcToString(startingTemperature.timestamp)}`);
+
     // Publishes temperature details while the device is charging
     while device:isCharging() {
         device:TemperatureDetails deviceTemperature = check device:getTemperatureDetails();

@@ -50,6 +50,7 @@ task testExamples {
                     } else {
                         commandLine 'sh', '-c', "${ballerinaDist}/bin/bal test --offline ${example}"
                     }
+                    delete files("${example}/Dependencies.toml")
                 }
             } catch (Exception e) {
                 println("Example '${example}' Build failed: " + e.message)
@@ -77,6 +78,7 @@ task buildExamples {
                     } else {
                         commandLine 'sh', '-c', "${ballerinaDist}/bin/bal build ${example}"
                     }
+                    delete files("${example}/Dependencies.toml")
                 }
             } catch (Exception e) {
                 println("Example '${example}' Build failed: " + e.message)
@@ -97,7 +99,7 @@ task stopMqttServer() {
             if (stdOut.toString().contains("mqtt-test")) {
                 println "Stopping Mqtt server."
                 exec {
-                    commandLine 'sh', '-c', "docker-compose -f tests/resources/docker-compose.yaml rm -svf"
+                    commandLine 'sh', '-c', "docker-compose -f ../ballerina/tests/resources/docker-compose.yaml rm -svf"
                     standardOutput = stdOut
                 }
                 println stdOut.toString()
