@@ -27,7 +27,7 @@ public function main() returns error? {
     mqtt:Client temperaturePublisher = check new (mqtt:DEFAULT_URL, uuid:createType1AsString());
     device:TemperatureDetails startingTemperature = check device:getTemperatureDetails();
     // Sending the starting temperature of the device to the topic to store
-    mqtt:DeliveryToken token = check temperaturePublisher->publish(TOPIC, {
+    _ = check temperaturePublisher->publish(TOPIC, {
         payload: startingTemperature.toJsonString().toBytes(),
         qos: 2,
         retained: true
@@ -37,7 +37,7 @@ public function main() returns error? {
     // Publishes temperature details while the device is charging
     while device:isCharging() {
         device:TemperatureDetails deviceTemperature = check device:getTemperatureDetails();
-        token = check temperaturePublisher->publish(TOPIC, {
+        _ = check temperaturePublisher->publish(TOPIC, {
             payload: deviceTemperature.toJsonString().toBytes(),
             qos: 2
         });

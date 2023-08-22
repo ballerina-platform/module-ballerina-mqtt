@@ -50,7 +50,6 @@ task testExamples {
                     } else {
                         commandLine 'sh', '-c', "${ballerinaDist}/bin/bal test --offline ${example}"
                     }
-                    delete files("${example}/Dependencies.toml")
                 }
             } catch (Exception e) {
                 println("Example '${example}' Build failed: " + e.message)
@@ -78,7 +77,6 @@ task buildExamples {
                     } else {
                         commandLine 'sh', '-c', "${ballerinaDist}/bin/bal build ${example}"
                     }
-                    delete files("${example}/Dependencies.toml")
                 }
             } catch (Exception e) {
                 println("Example '${example}' Build failed: " + e.message)
@@ -111,8 +109,15 @@ task stopMqttServer() {
     }
 }
 
+task deleteDependencyTomls(type: Delete) {
+    delete fileTree("${project.projectDir}") {
+        include "**/Dependencies.toml"
+    }
+}
+
 buildExamples.dependsOn ":${packageName}-ballerina:build"
 testExamples.dependsOn ":${packageName}-ballerina:build"
 build.dependsOn buildExamples
 test.dependsOn testExamples
 build.finalizedBy stopMqttServer
+build.finalizedBy deleteDependencyTomls
