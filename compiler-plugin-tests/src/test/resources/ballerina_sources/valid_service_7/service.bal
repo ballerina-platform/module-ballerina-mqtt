@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/grpc;
 import ballerina/mqtt;
 import ballerina/uuid;
 
@@ -28,8 +27,8 @@ mqtt:ListenerConfiguration listenerConfiguration = {
 
 listener mqtt:Listener mqttSubscriber = check new (mqtt:DEFAULT_URL, uuid:createType1AsString(), "mqtt/test", listenerConfiguration);
 
-@grpc:Descriptor {
-    value: "annotation"
+@display {
+    label: "mqttService"
 }
 service on mqttSubscriber {
     remote function onMessage(mqtt:Message message) returns mqtt:Error? {
