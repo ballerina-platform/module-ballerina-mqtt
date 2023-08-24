@@ -17,7 +17,7 @@
 import ballerina/jballerina.java;
 
 # Represents a MQTT listener endpoint.
-public isolated client class Listener {
+public isolated class Listener {
 
     private final Subscription[] & readonly mqttSubscriptions;
 

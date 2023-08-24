@@ -100,7 +100,7 @@ public class CodeSnippetGenerationCodeActionTest extends AbstractCodeActionTest 
                 LinePosition.from(line, offset));
         CodeActionArgument locationArg = CodeActionArgument.from(NODE_LOCATION, lineRange);
         CodeActionInfo codeAction = CodeActionInfo.from(actionName, List.of(locationArg));
-        codeAction.setProviderName("MQTT_115/ballerina/mqtt/" + templateName);
+        codeAction.setProviderName("MQTT_114/ballerina/mqtt/" + templateName);
         return codeAction;
     }
 }

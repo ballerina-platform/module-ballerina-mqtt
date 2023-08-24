@@ -18,11 +18,7 @@
 
 package io.ballerina.stdlib.mqtt.compiler;
 
-import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.MethodSymbol;
-import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
-import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
@@ -33,7 +29,6 @@ import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
-import java.util.List;
 import java.util.Optional;
 
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.ON_MESSAGE_FUNC;
@@ -60,7 +55,6 @@ public class MqttServiceValidator {
                     serviceDeclarationNode.location()));
         }
 
-        validateAnnotation(context);
         FunctionDefinitionNode onMessage = null;
         FunctionDefinitionNode onError = null;
 
@@ -87,19 +81,5 @@ public class MqttServiceValidator {
             }
         }
         new MqttFunctionValidator(context, onMessage, onError).validate();
-    }
-
-    private void validateAnnotation(SyntaxNodeAnalysisContext context) {
-        SemanticModel semanticModel = context.semanticModel();
-        ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) context.node();
-        Optional<Symbol> symbol = semanticModel.symbol(serviceDeclarationNode);
-        if (symbol.isPresent()) {
-            ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) symbol.get();
-            List<AnnotationSymbol> symbolList = serviceDeclarationSymbol.annotations();
-            if (!symbolList.isEmpty()) {
-                context.reportDiagnostic(PluginUtils.getDiagnostic(PluginConstants.CompilationErrors.INVALID_ANNOTATION,
-                        DiagnosticSeverity.ERROR, serviceDeclarationNode.location()));
-            }
-        }
     }
 }
