@@ -23,8 +23,8 @@ import ballerina/time;
 public function main(string label, string output_csv_path) returns error? {
     http:Client loadTestClient = check new ("http://bal.perf.test");
 
-    boolean response = check loadTestClient->get("/mqtt/publish");
-    if response {
+    error? response = check loadTestClient->get("/mqtt/publish");
+    if response is () {
         log:printInfo("Started publishing messages");
     } else {
         log:printError("Error occurred while publishing messages");
@@ -37,9 +37,7 @@ public function main(string label, string output_csv_path) returns error? {
         boolean|map<string>|error res = loadTestClient->get("/mqtt/getResults");
         if res is error {
             log:printError("Error occurred", res);
-        } else if res is boolean {
-            log:printInfo(res.toString());
-        } else {
+        } else if res is map<string> {
             finished = true;
             testResults = res;
         }

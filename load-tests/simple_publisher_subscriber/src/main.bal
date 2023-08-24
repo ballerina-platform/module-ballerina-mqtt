@@ -48,13 +48,10 @@ boolean finished = false;
 
 service /mqtt on new http:Listener(9100) {
 
-    resource function get publish() returns boolean {
+    resource function get publish() returns error? {
         log:printInfo("Received request to start publishing messages.");
-        error? result = startListener();
+        check startListener();
         log:printInfo("Started listener.");
-        if result is error {
-            return false;
-        }
         errorCount = 0;
         sentCount = 0;
         receivedCount = 0;
@@ -63,7 +60,6 @@ service /mqtt on new http:Listener(9100) {
         finished = false;
         _ = start publishMessages();
         log:printInfo("Started publishing messages.");
-        return true;
     }
 
     resource function get getResults() returns boolean|map<string> {
@@ -79,11 +75,19 @@ service /mqtt on new http:Listener(9100) {
     }
 }
 
-function publishMessages() returns error? {
+function publishMessages() {
     startedTime = time:utcNow();
     // Publishing messages for 1 hour
     int endingTimeInSecs = startedTime[0] + 3600;
-    mqtt:Client 'client = check new(MQTT_CLUSTER, uuid:createType1AsString());
+    mqtt:Client|mqtt:Error 'client = new(MQTT_CLUSTER, uuid:createType1AsString());
+    if 'client is mqtt:Error {
+        log:printError("Error while creating the client.", 'client);
+        lock {
+            errorCount += 1;
+        }
+        finished = true;
+        return;
+    }
     while time:utcNow()[0] <= endingTimeInSecs {
         mqtt:DeliveryToken|error result = 'client->publish(TOPIC, {
             payload: SENDING_MESSAGE.toJsonString().toBytes()
@@ -104,6 +108,7 @@ function publishMessages() returns error? {
         lock {
             errorCount += 1;
         }
+        finished = true;
     } else {
         sentCount +=1;
     }
