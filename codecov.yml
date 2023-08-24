@@ -1,5 +1,6 @@
 ignore:
   - "compiler-plugin-tests"
+  - "load-tests"
 
 coverage:
   precision: 2

@@ -1,0 +1,6 @@
+resources:
+  - configmap.yml
+  - mqtt-broker-deployment.yml
+  - mqtt-broker-service.yml
+  - simple_publisher_subscriber.yaml
+  - ingress.yaml
