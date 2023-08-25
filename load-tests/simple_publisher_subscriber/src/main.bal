@@ -78,7 +78,7 @@ service /mqtt on new http:Listener(9100) {
 function publishMessages() {
     startedTime = time:utcNow();
     // Publishing messages for 1 hour
-    int endingTimeInSecs = startedTime[0] + 30;
+    int endingTimeInSecs = startedTime[0] + 3600;
     mqtt:Client|mqtt:Error 'client = new (MQTT_CLUSTER, uuid:createType1AsString());
     if 'client is mqtt:Error {
         log:printError("Error while creating the client.", 'client);
