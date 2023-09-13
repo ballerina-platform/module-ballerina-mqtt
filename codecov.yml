@@ -1,5 +1,6 @@
 ignore:
   - "compiler-plugin-tests"
+  - "examples"
   - "load-tests"
 
 coverage:
