@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+data:
+  mosquitto.conf: |-
+    # Ip/hostname to listen to.
+    # If not given, will listen on all interfaces
+    #bind_address
+
+    # Port to use for the default listener.
+    port 1883
+
+    # Allow anonymous users to connect?
+    # If not, the password file should be created
+    allow_anonymous true
+
+    # The password file.
+    # Use the `mosquitto_passwd` utility.
+    # If TLS is not compiled, plaintext "username:password" lines bay be used
+    # password_file /mosquitto/config/passwd
+

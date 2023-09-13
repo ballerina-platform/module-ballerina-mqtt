@@ -60,11 +60,10 @@ public class PluginConstants {
                 "MQTT_109"),
         INVALID_MULTIPLE_LISTENERS("Multiple listener attachments. Only one mqtt:Listener is allowed.",
                 "MQTT_110"),
-        INVALID_ANNOTATION("No annotations are allowed for mqtt services.", "MQTT_111"),
-        MUST_HAVE_ERROR("Must have the required parameter mqtt:Error", "MQTT_112"),
-        INVALID_ERROR_PARAM_COUNT("Invalid method parameter count. Only mqtt:Error is allowed.", "MQTT_113"),
-        ONLY_ERROR_ALLOWED("Invalid method parameter. Only mqtt:Error or error is allowed", "MQTT_114"),
-        TEMPLATE_CODE_GENERATION_HINT("Template generation for empty service", "MQTT_115");
+        MUST_HAVE_ERROR("Must have the required parameter mqtt:Error", "MQTT_111"),
+        INVALID_ERROR_PARAM_COUNT("Invalid method parameter count. Only mqtt:Error is allowed.", "MQTT_112"),
+        ONLY_ERROR_ALLOWED("Invalid method parameter. Only mqtt:Error or error is allowed", "MQTT_113"),
+        TEMPLATE_CODE_GENERATION_HINT("Template generation for empty service", "MQTT_114");
 
         private final String error;
         private final String errorCode;

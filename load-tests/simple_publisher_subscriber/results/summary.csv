@@ -1,0 +1,4 @@
+Label,# Samples,Average,Median,90% Line,95% Line,99% Line,Min,Max,Error %,Throughput,Received KB/sec,Std. Dev.,Date,Payload,Users
+MQTT Simple Publisher Subscriber,302,0.10286186088372093,0,0,0,0,0,0,0.0,9.721776287232826,0,0,1692936127,0,1
+MQTT Simple Publisher Subscriber,294,0.10303228771672354,0,0,0,0,0,0,0.0,9.705695390840926,0,0,1692936943,0,1
+MQTT Simple Publisher Subscriber,35686,0.10090476308336836,0,0,0,0,0,0,0.0,9.91033494795277,0,0,1692941941,0,1
