@@ -24,10 +24,10 @@ configurable string TOPIC = "temperature/+";
 
 isolated service on new mqtt:Listener(mqtt:DEFAULT_URL, uuid:createType1AsString(), TOPIC, {manualAcks: false}) {
 
-    private final map<TemperatureDetails & readonly> startingTemperatures = {};
+    private final map<TemperatureDetails> startingTemperatures = {};
 
     isolated remote function onMessage(mqtt:Message message, mqtt:Caller caller) returns error? {
-        TemperatureDetails & readonly temperature = check value:fromJsonStringWithType(check string:fromBytes(message.payload));
+        TemperatureDetails temperature = check value:fromJsonStringWithType(check string:fromBytes(message.payload));
         lock {
             if !self.startingTemperatures.hasKey(temperature.deviceId) {
                 self.startingTemperatures[temperature.deviceId] = temperature;
@@ -49,7 +49,7 @@ isolated service on new mqtt:Listener(mqtt:DEFAULT_URL, uuid:createType1AsString
     }
 }
 
-type TemperatureDetails record {|
+type TemperatureDetails readonly & record {|
     string deviceId;
     float temperature;
     time:Utc timestamp;
