@@ -41,7 +41,7 @@ public function main() returns error? {
             payload: deviceTemperature.toJsonString().toBytes(),
             qos: 2
         });
-        io:println(string `Published temperature of the device: ${startingTemperature.toJsonString()} at ${time:utcToString(startingTemperature.timestamp)}`);
+        io:println(string `Published temperature of the device: ${deviceTemperature.toJsonString()} at ${time:utcToString(deviceTemperature.timestamp)}`);
         runtime:sleep(1);
     }
 }
