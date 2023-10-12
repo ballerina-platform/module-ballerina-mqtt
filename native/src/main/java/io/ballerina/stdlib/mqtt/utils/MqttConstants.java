@@ -24,7 +24,9 @@ import io.ballerina.runtime.api.values.BString;
 /**
  * Contains the constant values related in the runtime.
  */
-public class MqttConstants {
+public final class MqttConstants {
+
+    private MqttConstants() {}
 
     public static final BString CONNECTION_CONFIGURATION = StringUtils.fromString("connectionConfig");
     public static final BString USERNAME = StringUtils.fromString("username");

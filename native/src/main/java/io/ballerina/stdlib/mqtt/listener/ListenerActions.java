@@ -36,7 +36,9 @@ import org.eclipse.paho.mqttv5.common.MqttSubscription;
 /**
  * Class containing the external methods of the listener.
  */
-public class ListenerActions {
+public final class ListenerActions {
+
+    private ListenerActions() {}
 
     public static Object externInit(BObject clientObject, BString serverUri, BString clientId,
                                     BMap<BString, Object> listenerConfiguration) {

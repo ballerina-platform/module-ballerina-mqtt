@@ -37,7 +37,9 @@ import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 /**
  * Class containing the external methods of the caller.
  */
-public class CallerActions {
+public final class CallerActions {
+
+    private CallerActions() {}
 
     private static final ExecutorService executorService = Executors.newCachedThreadPool(new CallerThreadFactory());
 
