@@ -85,7 +85,9 @@ import static io.ballerina.stdlib.mqtt.utils.MqttConstants.USERNAME;
 /**
  * Class containing the utility functions related to the clients.
  */
-public class MqttUtils {
+public final class MqttUtils {
+
+    private MqttUtils() {}
 
     public static BMap<BString, Object> getBMqttMessage(MqttMessage message, String topic) {
         BMap<BString, Object> bMessage = ValueCreator.createRecordValue(ModuleUtils.getModule(),

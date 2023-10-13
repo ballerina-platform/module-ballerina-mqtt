@@ -24,7 +24,7 @@ import io.ballerina.runtime.api.Module;
 /**
  * Class holding module related utility functions.
  */
-public class ModuleUtils {
+public final class ModuleUtils {
 
     private static Module mqttModule = null;
 

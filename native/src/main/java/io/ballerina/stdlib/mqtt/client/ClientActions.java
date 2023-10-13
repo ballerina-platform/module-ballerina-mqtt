@@ -59,7 +59,9 @@ import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 /**
  * Class containing the external methods of the publisher.
  */
-public class ClientActions {
+public final class ClientActions {
+
+    private ClientActions() {}
 
     private static final ExecutorService publishExecutorService =
             Executors.newCachedThreadPool(new ClientThreadFactory());
