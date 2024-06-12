@@ -12,7 +12,7 @@ dependencies {
     implementation group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
     implementation group: 'io.ballerina.stdlib', name: 'crypto-native', version: "${stdlibCryptoVersion}"
     implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.mqttv5.client', version:"${pahoMqtt5Version}"
-    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version:"${bouncycastleVersion}"
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version:"${bouncycastleVersion}"
 }
 
 def excludePattern = '**/module-info.java'
