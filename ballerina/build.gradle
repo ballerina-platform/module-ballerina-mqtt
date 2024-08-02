@@ -123,7 +123,7 @@ task stopMqttServer() {
             if (stdOut.toString().contains("mqtt-test")) {
                 println "Stopping Mqtt server."
                 exec {
-                    commandLine 'sh', '-c', "docker-compose -f tests/resources/docker-compose.yaml rm -svf"
+                    commandLine 'sh', '-c', "docker compose -f tests/resources/compose.yaml rm -svf"
                     standardOutput = stdOut
                 }
                 println stdOut.toString()
