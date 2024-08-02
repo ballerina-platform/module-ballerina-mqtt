@@ -100,7 +100,7 @@ task startMqttServer() {
             if (!stdOut.toString().contains("mqtt-test")) {
                 println "Starting Mqtt server."
                 exec {
-                    commandLine 'sh', '-c', "docker-compose -f tests/resources/docker-compose.yaml up -d"
+                    commandLine 'sh', '-c', "docker compose -f tests/resources/compose.yaml up -d"
                     standardOutput = stdOut
                 }
                 println stdOut.toString()
