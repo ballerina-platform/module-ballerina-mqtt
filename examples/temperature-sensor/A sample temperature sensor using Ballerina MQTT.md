@@ -20,7 +20,7 @@ send an email to the user (Note that the email sending part is not implemented i
 1. [Install MQTT in your local machine](https://mosquitto.org/download/)
 2. [Use MQTT with docker](https://hub.docker.com/_/eclipse-mosquitto)
 
-* You can find the docker file used to set up the cluster for this example in [here](../../ballerina/tests/resources/docker-compose.yaml).
+* You can find the docker file used to set up the cluster for this example in [here](../../ballerina/tests/resources/compose.yaml).
 
 ## Run the Example
 
