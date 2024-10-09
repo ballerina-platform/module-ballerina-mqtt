@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.mqtt.client;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.StreamType;
@@ -40,10 +39,7 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CLIENT_EXECUTOR_SERVICES;
@@ -108,7 +104,7 @@ public final class ClientActions {
         MqttClient publisher = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         MqttMessage mqttMessage = generateMqttMessage(message);
         try {
-            Future future = env.markAsync();
+            CompletableFuture<Object> future = new CompletableFuture();
             publisher.publish(topic.getValue(), mqttMessage);
             LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject
                     .getNativeData(DELIVERY_TOKEN_QUEUE);
@@ -180,7 +176,7 @@ public final class ClientActions {
     public static Object nextResult(Environment env, BObject streamIterator) {
         BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData(RESPONSE_QUEUE);
         ExecutorService executor = (ExecutorService) streamIterator.getNativeData(RESPONSE_EXECUTOR_SERVICE);
-        Future future = env.markAsync();
+        CompletableFuture<Object> future = new CompletableFuture<>();
         executor.execute(() -> {
             try {
                 BMap message = (BMap) messageQueue.take();
