@@ -149,8 +149,8 @@ public class MqttListenerCallbackImpl implements MqttCallback {
         bMqttToken = getMqttDeliveryToken(token);
         StrandMetadata metadata = getStrandMetadata(MqttConstants.ONCOMPLETE);
         try {
-            Object result = runtime.startNonIsolatedWorker(service, MqttConstants.ONCOMPLETE, null, metadata,null,
-                    bMqttToken, true);
+            Object result = runtime.startNonIsolatedWorker(service, MqttConstants.ONCOMPLETE, null,
+                    metadata, null, bMqttToken, true);
             BServiceInvokeCallbackImpl.notifySuccess(result);
         } catch (BError bError) {
             BServiceInvokeCallbackImpl.notifyFailure(bError);
