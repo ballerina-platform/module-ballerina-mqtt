@@ -113,11 +113,9 @@ public class MqttListenerCallbackImpl implements MqttCallback {
                     callerObject.addNativeData(MqttConstants.CORRELATION_DATA,
                             message.getProperties().getCorrelationData());
                 }
-                result = runtime.startNonIsolatedWorker(service, MqttConstants.ONMESSAGE, null, metadata, null,
-                        bMqttMessage, true, callerObject, true).get();
+                result = runtime.call(service, MqttConstants.ONMESSAGE, bMqttMessage, true, callerObject, true);
             } else {
-                result = runtime.startNonIsolatedWorker(service, MqttConstants.ONMESSAGE, null, metadata, null,
-                        bMqttMessage, true).get();
+                result = runtime.call(service, MqttConstants.ONMESSAGE, bMqttMessage, true);
             }
             BServiceInvokeCallbackImpl.notifySuccess(result);
         } catch (BError bError) {
@@ -130,10 +128,8 @@ public class MqttListenerCallbackImpl implements MqttCallback {
             bError.printStackTrace();
             return;
         }
-        StrandMetadata metadata = getStrandMetadata(MqttConstants.ONERROR);
         try {
-            Object result = runtime.startNonIsolatedWorker(service, MqttConstants.ONERROR, null, metadata, null,
-                    bError, true);
+            Object result = runtime.call(service, MqttConstants.ONERROR, bError, true);
             BServiceInvokeCallbackImpl.notifySuccess(result);
         } catch (BError error) {
             BServiceInvokeCallbackImpl.notifyFailure(error);
@@ -147,10 +143,8 @@ public class MqttListenerCallbackImpl implements MqttCallback {
         }
         BMap<BString, Object> bMqttToken;
         bMqttToken = getMqttDeliveryToken(token);
-        StrandMetadata metadata = getStrandMetadata(MqttConstants.ONCOMPLETE);
         try {
-            Object result = runtime.startNonIsolatedWorker(service, MqttConstants.ONCOMPLETE, null,
-                    metadata, null, bMqttToken, true);
+            Object result = runtime.call(service, MqttConstants.ONCOMPLETE, bMqttToken, true);
             BServiceInvokeCallbackImpl.notifySuccess(result);
         } catch (BError bError) {
             BServiceInvokeCallbackImpl.notifyFailure(bError);
