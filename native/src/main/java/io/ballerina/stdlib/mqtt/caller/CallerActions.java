@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.mqtt.caller;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.stdlib.mqtt.utils.MqttConstants;
@@ -29,8 +28,6 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static io.ballerina.stdlib.mqtt.utils.MqttUtils.generateMqttMessage;
 
@@ -41,21 +38,15 @@ public final class CallerActions {
 
     private CallerActions() {}
 
-    private static final ExecutorService executorService = Executors.newCachedThreadPool(new CallerThreadFactory());
-
     public static Object complete(Environment env, BObject callerObject) {
         MqttClient subscriber = (MqttClient) callerObject.getNativeData(MqttConstants.SUBSCRIBER);
         int messageId = (int) callerObject.getNativeData(MqttConstants.MESSAGE_ID);
         int qos = (int) callerObject.getNativeData(MqttConstants.QOS);
-        Future future = env.markAsync();
-        executorService.execute(() -> {
-            try {
-                subscriber.messageArrivedComplete(messageId, qos);
-                future.complete(null);
-            } catch (MqttException e) {
-                future.complete(MqttUtils.createMqttError(e));
-            }
-        });
+        try {
+            subscriber.messageArrivedComplete(messageId, qos);
+        } catch (MqttException e) {
+            return MqttUtils.createMqttError(e);
+        }
         return null;
     }
 
@@ -70,15 +61,11 @@ public final class CallerActions {
         if (Objects.nonNull(correlationData)) {
             mqttMessage.getProperties().setCorrelationData(correlationData);
         }
-        Future future = env.markAsync();
-        executorService.execute(() -> {
-            try {
-                subscriber.publish(responseTopic, mqttMessage);
-                future.complete(null);
-            } catch (MqttException e) {
-                future.complete(MqttUtils.createMqttError(e));
-            }
-        });
+        try {
+            subscriber.publish(responseTopic, mqttMessage);
+        } catch (MqttException e) {
+            return MqttUtils.createMqttError(e);
+        }
         return null;
     }
 

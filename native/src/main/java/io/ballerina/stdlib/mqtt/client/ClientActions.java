@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.mqtt.client;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.StreamType;
@@ -108,20 +107,14 @@ public final class ClientActions {
         MqttClient publisher = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         MqttMessage mqttMessage = generateMqttMessage(message);
         try {
-            Future future = env.markAsync();
             publisher.publish(topic.getValue(), mqttMessage);
             LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject
                     .getNativeData(DELIVERY_TOKEN_QUEUE);
-            publishExecutorService.execute(() -> {
-                try {
-                    future.complete(deliveryTokenQueue.take());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    future.complete(MqttUtils.createMqttError(e));
-                }
-            });
+            deliveryTokenQueue.take();
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         return null;
     }
@@ -179,18 +172,13 @@ public final class ClientActions {
 
     public static Object nextResult(Environment env, BObject streamIterator) {
         BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData(RESPONSE_QUEUE);
-        ExecutorService executor = (ExecutorService) streamIterator.getNativeData(RESPONSE_EXECUTOR_SERVICE);
-        Future future = env.markAsync();
-        executor.execute(() -> {
-            try {
-                BMap message = (BMap) messageQueue.take();
-                future.complete(message);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                future.complete(MqttUtils.createMqttError(e));
-            }
-        });
-        return null;
+        try {
+            BMap message = (BMap) messageQueue.take();
+            return message;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return MqttUtils.createMqttError(e);
+        }
     }
 
     public static void closeStream(BObject streamIterator) {

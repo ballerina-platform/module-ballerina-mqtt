@@ -18,34 +18,21 @@
 
 package io.ballerina.stdlib.mqtt.listener;
 
-import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.values.BError;
-
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Class containing the callback of onMessage service function.
  */
-public class BServiceInvokeCallbackImpl implements Callback {
+public class BServiceInvokeCallbackImpl {
 
-    private final CountDownLatch countDownLatch;
-
-    public BServiceInvokeCallbackImpl(CountDownLatch countDownLatch) {
-        this.countDownLatch = countDownLatch;
-    }
-
-    @Override
-    public void notifySuccess(Object obj) {
+    public static void notifySuccess(Object obj) {
         if (obj instanceof BError) {
             ((BError) obj).printStackTrace();
         }
-        countDownLatch.countDown();
     }
 
-    @Override
-    public void notifyFailure(BError bError) {
+    public static void notifyFailure(BError bError) {
         bError.printStackTrace();
-        countDownLatch.countDown();
         System.exit(1);
     }
 }
