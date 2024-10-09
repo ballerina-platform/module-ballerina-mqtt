@@ -40,10 +40,10 @@ import org.eclipse.paho.mqttv5.common.MqttSubscription;
 
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.CompletableFuture;
 
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.CLIENT_EXECUTOR_SERVICES;
