@@ -19,9 +19,7 @@
 package io.ballerina.stdlib.mqtt.listener;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Module;
 import io.ballerina.runtime.api.Runtime;
-import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -92,7 +90,6 @@ public class MqttListenerCallbackImpl implements MqttCallback {
 
     private void invokeOnMessage(MqttMessage message, String topic) {
         BMap<BString, Object> bMqttMessage = getBMqttMessage(message, topic);
-        StrandMetadata metadata = getStrandMetadata(MqttConstants.ONMESSAGE);
         boolean callerExists = isCallerAvailable();
         Object result;
         if (!isMethodImplemented(MqttConstants.ONMESSAGE)) {
@@ -169,10 +166,5 @@ public class MqttListenerCallbackImpl implements MqttCallback {
             }
         }
         return Optional.empty();
-    }
-
-    private StrandMetadata getStrandMetadata(String parentFunctionName) {
-        Module module = getModule();
-        return new StrandMetadata(module.getOrg(), module.getName(), module.getMajorVersion(), parentFunctionName);
     }
 }
