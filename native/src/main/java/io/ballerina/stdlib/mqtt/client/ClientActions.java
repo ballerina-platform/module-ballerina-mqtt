@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.mqtt.client;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.StreamType;
@@ -32,6 +31,7 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.mqtt.utils.MqttConstants;
 import io.ballerina.stdlib.mqtt.utils.MqttUtils;
+import io.ballerina.stdlib.mqtt.utils.Util;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
@@ -41,6 +41,7 @@ import org.eclipse.paho.mqttv5.common.MqttSubscription;
 
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -107,8 +108,9 @@ public final class ClientActions {
     public static Object externPublish(Environment env, BObject clientObject, BString topic, BMap message) {
         MqttClient publisher = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         MqttMessage mqttMessage = generateMqttMessage(message);
-        try {
-            Future future = env.markAsync();
+        return env.yieldAndRun(() -> {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            try {
             publisher.publish(topic.getValue(), mqttMessage);
             LinkedBlockingQueue deliveryTokenQueue = (LinkedBlockingQueue) clientObject
                     .getNativeData(DELIVERY_TOKEN_QUEUE);
@@ -120,10 +122,11 @@ public final class ClientActions {
                     future.complete(MqttUtils.createMqttError(e));
                 }
             });
-        } catch (MqttException e) {
-            return MqttUtils.createMqttError(e);
-        }
-        return null;
+            } catch (MqttException e) {
+                return MqttUtils.createMqttError(e);
+            }
+            return Util.getResult(future);
+        });
     }
 
     public static Object externReceive(BObject clientObject, BTypedesc bTypedesc) {
@@ -180,17 +183,19 @@ public final class ClientActions {
     public static Object nextResult(Environment env, BObject streamIterator) {
         BlockingQueue<?> messageQueue = (BlockingQueue<?>) streamIterator.getNativeData(RESPONSE_QUEUE);
         ExecutorService executor = (ExecutorService) streamIterator.getNativeData(RESPONSE_EXECUTOR_SERVICE);
-        Future future = env.markAsync();
-        executor.execute(() -> {
-            try {
-                BMap message = (BMap) messageQueue.take();
-                future.complete(message);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                future.complete(MqttUtils.createMqttError(e));
-            }
+        return env.yieldAndRun(() -> {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            executor.execute(() -> {
+                try {
+                    BMap message = (BMap) messageQueue.take();
+                    future.complete(message);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    future.complete(MqttUtils.createMqttError(e));
+                }
+            });
+            return Util.getResult(future);
         });
-        return null;
     }
 
     public static void closeStream(BObject streamIterator) {
