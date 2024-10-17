@@ -19,10 +19,7 @@
 package io.ballerina.stdlib.mqtt.listener;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.Runtime;
-import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
@@ -32,6 +29,7 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.mqtt.utils.MqttConstants;
 import io.ballerina.stdlib.mqtt.utils.MqttUtils;
+import io.ballerina.stdlib.mqtt.utils.Util;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
 import org.eclipse.paho.mqttv5.client.MqttClient;
@@ -42,8 +40,6 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static io.ballerina.stdlib.mqtt.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.mqtt.utils.MqttConstants.MESSAGE_ID;
@@ -95,8 +91,6 @@ public class MqttListenerCallbackImpl implements MqttCallback {
 
     private void invokeOnMessage(MqttMessage message, String topic) {
         BMap<BString, Object> bMqttMessage = getBMqttMessage(message, topic);
-        StrandMetadata metadata = getStrandMetadata(MqttConstants.ONMESSAGE);
-        CountDownLatch latch = new CountDownLatch(1);
         boolean callerExists = isCallerAvailable();
         if (!isMethodImplemented(MqttConstants.ONMESSAGE)) {
             invokeOnError(MqttUtils.createMqttError(new NoSuchMethodException("method onMessage not found")));
@@ -115,17 +109,19 @@ public class MqttListenerCallbackImpl implements MqttCallback {
                 callerObject.addNativeData(MqttConstants.CORRELATION_DATA,
                         message.getProperties().getCorrelationData());
             }
-            runtime.invokeMethodAsyncSequentially(service, MqttConstants.ONMESSAGE, null, metadata,
-                    new BServiceInvokeCallbackImpl(latch), null, PredefinedTypes.TYPE_ANY,
-                    bMqttMessage, true, callerObject, true);
+            try {
+                Object result = runtime.call(service, MqttConstants.ONMESSAGE, bMqttMessage, callerObject);
+                Util.notifySuccess(result);
+            } catch (BError bError) {
+                Util.notifyFailure(bError);
+            }
         } else {
-            runtime.invokeMethodAsyncSequentially(service, MqttConstants.ONMESSAGE, null, metadata,
-                    new BServiceInvokeCallbackImpl(latch), null, PredefinedTypes.TYPE_ANY, bMqttMessage, true);
-        }
-        try {
-            latch.await(100, TimeUnit.SECONDS);
-        } catch (InterruptedException exception) {
-            exception.printStackTrace();
+            try {
+                Object result = runtime.call(service, MqttConstants.ONMESSAGE, bMqttMessage);
+                Util.notifySuccess(result);
+            } catch (BError bError) {
+                Util.notifyFailure(bError);
+            }
         }
     }
 
@@ -134,14 +130,11 @@ public class MqttListenerCallbackImpl implements MqttCallback {
             bError.printStackTrace();
             return;
         }
-        StrandMetadata metadata = getStrandMetadata(MqttConstants.ONERROR);
-        CountDownLatch latch = new CountDownLatch(1);
-        runtime.invokeMethodAsyncSequentially(service, MqttConstants.ONERROR, null, metadata,
-                new BServiceInvokeCallbackImpl(latch), null, PredefinedTypes.TYPE_ANY, bError, true);
         try {
-            latch.await(100, TimeUnit.SECONDS);
-        } catch (InterruptedException exception) {
-            exception.printStackTrace();
+            Object result = runtime.call(service, MqttConstants.ONERROR, bError);
+            Util.notifySuccess(result);
+        } catch (BError error) {
+            Util.notifyFailure(error);
         }
     }
 
@@ -151,14 +144,11 @@ public class MqttListenerCallbackImpl implements MqttCallback {
         }
         BMap<BString, Object> bMqttToken;
         bMqttToken = getMqttDeliveryToken(token);
-        StrandMetadata metadata = getStrandMetadata(MqttConstants.ONCOMPLETE);
-        CountDownLatch latch = new CountDownLatch(1);
-        runtime.invokeMethodAsyncSequentially(service, MqttConstants.ONCOMPLETE, null, metadata,
-                new BServiceInvokeCallbackImpl(latch), null, PredefinedTypes.TYPE_ANY, bMqttToken, true);
         try {
-            latch.await(100, TimeUnit.SECONDS);
-        } catch (InterruptedException exception) {
-            exception.printStackTrace();
+            Object result = runtime.call(service, MqttConstants.ONCOMPLETE, bMqttToken);
+            Util.notifySuccess(result);
+        } catch (BError bError) {
+            Util.notifyFailure(bError);
         }
     }
 
@@ -180,10 +170,5 @@ public class MqttListenerCallbackImpl implements MqttCallback {
             }
         }
         return Optional.empty();
-    }
-
-    private StrandMetadata getStrandMetadata(String parentFunctionName) {
-        Module module = getModule();
-        return new StrandMetadata(module.getOrg(), module.getName(), module.getMajorVersion(), parentFunctionName);
     }
 }
