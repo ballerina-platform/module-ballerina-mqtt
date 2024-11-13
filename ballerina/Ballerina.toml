@@ -1,11 +1,11 @@
 [package]
 org = "ballerina"
 name = "mqtt"
-version = "1.2.0"
+version = "1.2.1"
 authors = ["ballerina"]
 keywords = ["mqtt", "client", "messaging", "network", "pubsub", "iot"]
 repository = "https://github.com/ballerina-platform/module-ballerina-mqtt"
-distribution = "2201.10.0-20241007-143200-6b69ca80"
+distribution = "2201.11.0-20241112-214900-6b80ab87"
 
 [platform.java21]
 graalvmCompatible = true
@@ -13,8 +13,8 @@ graalvmCompatible = true
 [[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "mqtt-native"
-version = "1.2.0"
-path = "../native/build/libs/mqtt-native-1.2.0.jar"
+version = "1.2.1"
+path = "../native/build/libs/mqtt-native-1.2.1-SNAPSHOT.jar"
 
 [[platform.java21.dependency]]
 groupId = "org.eclipse.paho"
