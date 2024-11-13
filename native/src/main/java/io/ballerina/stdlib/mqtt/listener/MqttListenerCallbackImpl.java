@@ -110,14 +110,14 @@ public class MqttListenerCallbackImpl implements MqttCallback {
                         message.getProperties().getCorrelationData());
             }
             try {
-                Object result = runtime.call(service, MqttConstants.ONMESSAGE, bMqttMessage, callerObject);
+                Object result = runtime.callMethod(service, MqttConstants.ONMESSAGE, null, bMqttMessage, callerObject);
                 Util.notifySuccess(result);
             } catch (BError bError) {
                 Util.notifyFailure(bError);
             }
         } else {
             try {
-                Object result = runtime.call(service, MqttConstants.ONMESSAGE, bMqttMessage);
+                Object result = runtime.callMethod(service, MqttConstants.ONMESSAGE, null, bMqttMessage);
                 Util.notifySuccess(result);
             } catch (BError bError) {
                 Util.notifyFailure(bError);
@@ -131,7 +131,7 @@ public class MqttListenerCallbackImpl implements MqttCallback {
             return;
         }
         try {
-            Object result = runtime.call(service, MqttConstants.ONERROR, bError);
+            Object result = runtime.callMethod(service, MqttConstants.ONERROR, null, bError);
             Util.notifySuccess(result);
         } catch (BError error) {
             Util.notifyFailure(error);
@@ -145,7 +145,7 @@ public class MqttListenerCallbackImpl implements MqttCallback {
         BMap<BString, Object> bMqttToken;
         bMqttToken = getMqttDeliveryToken(token);
         try {
-            Object result = runtime.call(service, MqttConstants.ONCOMPLETE, bMqttToken);
+            Object result = runtime.callMethod(service, MqttConstants.ONCOMPLETE, null, bMqttToken);
             Util.notifySuccess(result);
         } catch (BError bError) {
             Util.notifyFailure(bError);
