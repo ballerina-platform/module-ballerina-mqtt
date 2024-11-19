@@ -115,7 +115,7 @@ public final class ClientActions {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return MqttUtils.createMqttError(e);
-            } catch(MqttException e){
+            } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }
     });
