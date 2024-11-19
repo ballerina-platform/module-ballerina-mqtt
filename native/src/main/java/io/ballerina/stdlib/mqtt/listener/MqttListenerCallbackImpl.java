@@ -29,7 +29,6 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.mqtt.utils.MqttConstants;
 import io.ballerina.stdlib.mqtt.utils.MqttUtils;
-import io.ballerina.stdlib.mqtt.utils.Util;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
 import org.eclipse.paho.mqttv5.client.MqttClient;
@@ -111,16 +110,20 @@ public class MqttListenerCallbackImpl implements MqttCallback {
             }
             try {
                 Object result = runtime.callMethod(service, MqttConstants.ONMESSAGE, null, bMqttMessage, callerObject);
-                Util.notifySuccess(result);
+                if (result instanceof BError error) {
+                    error.printStackTrace();
+                }
             } catch (BError bError) {
-                Util.notifyFailure(bError);
+                bError.printStackTrace();
             }
         } else {
             try {
                 Object result = runtime.callMethod(service, MqttConstants.ONMESSAGE, null, bMqttMessage);
-                Util.notifySuccess(result);
+                if (result instanceof BError error) {
+                    error.printStackTrace();
+                }
             } catch (BError bError) {
-                Util.notifyFailure(bError);
+                bError.printStackTrace();
             }
         }
     }
@@ -132,9 +135,11 @@ public class MqttListenerCallbackImpl implements MqttCallback {
         }
         try {
             Object result = runtime.callMethod(service, MqttConstants.ONERROR, null, bError);
-            Util.notifySuccess(result);
+            if (result instanceof BError error) {
+                error.printStackTrace();
+            }
         } catch (BError error) {
-            Util.notifyFailure(error);
+            bError.printStackTrace();
         }
     }
 
@@ -146,9 +151,11 @@ public class MqttListenerCallbackImpl implements MqttCallback {
         bMqttToken = getMqttDeliveryToken(token);
         try {
             Object result = runtime.callMethod(service, MqttConstants.ONCOMPLETE, null, bMqttToken);
-            Util.notifySuccess(result);
+            if (result instanceof BError error) {
+                error.printStackTrace();
+            }
         } catch (BError bError) {
-            Util.notifyFailure(bError);
+            bError.printStackTrace();
         }
     }
 
