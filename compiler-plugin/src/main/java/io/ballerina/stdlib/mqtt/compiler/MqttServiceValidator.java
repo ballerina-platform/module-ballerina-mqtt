@@ -57,6 +57,7 @@ public class MqttServiceValidator {
 
         FunctionDefinitionNode onMessage = null;
         FunctionDefinitionNode onError = null;
+        FunctionDefinitionNode onComplete = null;
 
         for (Node node : memberNodes) {
             if (node.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION) {
@@ -68,6 +69,8 @@ public class MqttServiceValidator {
                         onMessage = functionDefinitionNode;
                     } else if (functionName.get().equals(PluginConstants.ON_ERROR_FUNC)) {
                         onError = functionDefinitionNode;
+                    } else if (functionName.get().equals(PluginConstants.ON_COMPLETE_FUNC)) {
+                        onComplete = functionDefinitionNode;
                     } else if (PluginUtils.isRemoteFunction(context, functionDefinitionNode)) {
                         context.reportDiagnostic(PluginUtils.getDiagnostic(
                                 PluginConstants.CompilationErrors.INVALID_REMOTE_FUNCTION,
@@ -80,6 +83,6 @@ public class MqttServiceValidator {
                         DiagnosticSeverity.ERROR, node.location()));
             }
         }
-        new MqttFunctionValidator(context, onMessage, onError).validate();
+        new MqttFunctionValidator(context, onMessage, onError, onComplete).validate();
     }
 }
