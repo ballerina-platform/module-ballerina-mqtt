@@ -45,14 +45,18 @@ import static io.ballerina.compiler.syntax.tree.SyntaxKind.QUALIFIED_NAME_REFERE
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CALLER;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.FUNCTION_SHOULD_BE_REMOTE;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_CALLER_PARAMETER;
+import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_DELIVERY_TOKEN_PARAM_COUNT;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_ERROR_PARAM_COUNT;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_MESSAGE_PARAMETER;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_PARAM_COUNT;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.INVALID_RETURN_TYPE_ERROR_OR_NIL;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.MUST_HAVE_CALLER_AND_MESSAGE;
+import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.MUST_HAVE_DELIVERY_TOKEN;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.MUST_HAVE_ERROR;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.NO_ON_MESSAGE;
+import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.ONLY_DELIVERY_TOKEN_ALLOWED;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.CompilationErrors.ONLY_ERROR_ALLOWED;
+import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.DELIVERY_TOKEN;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.ERROR_PARAM;
 import static io.ballerina.stdlib.mqtt.compiler.PluginConstants.MESSAGE;
 import static io.ballerina.stdlib.mqtt.compiler.PluginUtils.getDiagnostic;
@@ -70,13 +74,15 @@ public class MqttFunctionValidator {
     private final SemanticModel semanticModel;
     private final FunctionDefinitionNode onMessage;
     private final FunctionDefinitionNode onError;
+    private final FunctionDefinitionNode onComplete;
 
     public MqttFunctionValidator(SyntaxNodeAnalysisContext context, FunctionDefinitionNode onMessage,
-                                 FunctionDefinitionNode onError) {
+                                 FunctionDefinitionNode onError, FunctionDefinitionNode onComplete) {
         this.context = context;
         this.serviceDeclarationNode = (ServiceDeclarationNode) context.node();
         this.onMessage = onMessage;
         this.onError = onError;
+        this.onComplete = onComplete;
         this.semanticModel = context.semanticModel();
     }
 
@@ -84,6 +90,9 @@ public class MqttFunctionValidator {
         validateMandatoryFunction();
         if (Objects.nonNull(onError)) {
             validateOnError();
+        }
+        if (Objects.nonNull(onComplete)) {
+            validateOnComplete();
         }
     }
 
@@ -111,6 +120,14 @@ public class MqttFunctionValidator {
         validateReturnTypeErrorOrNil(onError);
     }
 
+    private void validateOnComplete() {
+        if (!PluginUtils.isRemoteFunction(context, onComplete)) {
+            reportErrorDiagnostic(FUNCTION_SHOULD_BE_REMOTE, onComplete.location());
+        }
+        validateOnCompleteParameters(onComplete);
+        validateReturnTypeErrorOrNil(onComplete);
+    }
+
     private void validateOnErrorParameters(FunctionDefinitionNode functionDefinitionNode) {
         SeparatedNodeList<ParameterNode> parameters = functionDefinitionNode.functionSignature().parameters();
         if (parameters.size() == 1) {
@@ -119,6 +136,18 @@ public class MqttFunctionValidator {
             reportErrorDiagnostic(INVALID_ERROR_PARAM_COUNT, functionDefinitionNode.functionSignature().location());
         } else {
             reportErrorDiagnostic(MUST_HAVE_ERROR, functionDefinitionNode.functionSignature().location());
+        }
+    }
+
+    private void validateOnCompleteParameters(FunctionDefinitionNode functionDefinitionNode) {
+        SeparatedNodeList<ParameterNode> parameters = functionDefinitionNode.functionSignature().parameters();
+        if (parameters.size() == 1) {
+            validateOnCompleteParameter(parameters.get(0));
+        } else if (parameters.size() > 1) {
+            reportErrorDiagnostic(INVALID_DELIVERY_TOKEN_PARAM_COUNT,
+                    functionDefinitionNode.functionSignature().location());
+        } else {
+            reportErrorDiagnostic(MUST_HAVE_DELIVERY_TOKEN, functionDefinitionNode.functionSignature().location());
         }
     }
 
@@ -134,6 +163,20 @@ public class MqttFunctionValidator {
         } else if (!paramSyntaxKind.equals(ERROR_TYPE_DESC)) {
             reportErrorDiagnostic(ONLY_ERROR_ALLOWED, parameterNode.location());
         }
+    }
+
+    private void validateOnCompleteParameter(ParameterNode parameterNode) {
+        SyntaxKind paramSyntaxKind = ((RequiredParameterNode) parameterNode).typeName().kind();
+        if (paramSyntaxKind.equals(QUALIFIED_NAME_REFERENCE)) {
+            Node parameterTypeNode = ((RequiredParameterNode) parameterNode).typeName();
+            Optional<Symbol> symbol = semanticModel.symbol(parameterTypeNode);
+            if (symbol.isPresent() && symbol.get().getName().isPresent() &&
+                    symbol.get().getName().get().equals(DELIVERY_TOKEN) && symbol.get().getModule().isPresent() &&
+                    validateModuleId(symbol.get().getModule().get())) {
+                return;
+            }
+        }
+        reportErrorDiagnostic(ONLY_DELIVERY_TOKEN_ALLOWED, parameterNode.location());
     }
 
     private void validateOnMessageParameters(FunctionDefinitionNode functionDefinitionNode) {

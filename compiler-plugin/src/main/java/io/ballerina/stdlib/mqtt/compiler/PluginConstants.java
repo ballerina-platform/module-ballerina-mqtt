@@ -26,12 +26,14 @@ public class PluginConstants {
     public static final String PACKAGE_PREFIX = "mqtt";
     public static final String ON_MESSAGE_FUNC = "onMessage";
     public static final String ON_ERROR_FUNC = "onError";
+    public static final String ON_COMPLETE_FUNC = "onComplete";
     public static final String PACKAGE_ORG = "ballerina";
 
     // parameters
     public static final String CALLER = "Caller";
     public static final String MESSAGE = "Message";
     public static final String ERROR_PARAM = "Error";
+    public static final String DELIVERY_TOKEN = "DeliveryToken";
 
     // return types error or nil
     public static final String BALLERINA_ERROR = "error";
@@ -63,7 +65,11 @@ public class PluginConstants {
         MUST_HAVE_ERROR("Must have the required parameter mqtt:Error", "MQTT_111"),
         INVALID_ERROR_PARAM_COUNT("Invalid method parameter count. Only mqtt:Error is allowed.", "MQTT_112"),
         ONLY_ERROR_ALLOWED("Invalid method parameter. Only mqtt:Error or error is allowed", "MQTT_113"),
-        TEMPLATE_CODE_GENERATION_HINT("Template generation for empty service", "MQTT_114");
+        TEMPLATE_CODE_GENERATION_HINT("Template generation for empty service", "MQTT_114"),
+        ONLY_DELIVERY_TOKEN_ALLOWED("Invalid method parameter. Only mqtt:DeliveryToken is allowed", "MQTT_115"),
+        INVALID_DELIVERY_TOKEN_PARAM_COUNT("Invalid method parameter count. Only mqtt:DeliveryToken is allowed",
+                "MQTT_116"),
+        MUST_HAVE_DELIVERY_TOKEN("Must have the required parameter mqtt:DeliveryToken", "MQTT_117");
 
         private final String error;
         private final String errorCode;
