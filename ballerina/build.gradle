@@ -150,5 +150,6 @@ build.dependsOn ":mqtt-native:build"
 build.dependsOn ":${packageName}-compiler-plugin:build"
 build.dependsOn "generatePomFileForMavenPublication"
 test.dependsOn ":${packageName}-compiler-plugin:build"
+test.dependsOn ":mqtt-native:build"
 publishToMavenLocal.dependsOn build
 publish.dependsOn build
