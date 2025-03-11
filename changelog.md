@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - [Allow onComplete method in the service declaration](https://github.com/ballerina-platform/ballerina-library/issues/7272)
+- [Update bouncy castle version to `1.80`](https://github.com/ballerina-platform/ballerina-library/issues/7683)
 
 ## [1.1.1] - 2024-07-17
 
