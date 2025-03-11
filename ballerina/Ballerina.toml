@@ -25,11 +25,11 @@ path = "./lib/org.eclipse.paho.mqttv5.client-1.2.5.jar"
 [[platform.java21.dependency]]
 groupId = "org.bouncycastle"
 artifactId = "bcpkix-jdk18on"
-version = "1.78"
-path = "./lib/bcpkix-jdk18on-1.78.jar"
+version = "1.80"
+path = "./lib/bcpkix-jdk18on-1.80.jar"
 
 [[platform.java21.dependency]]
 groupId = "org.bouncycastle"
 artifactId = "bcutil-jdk18on"
-version = "1.78"
-path = "./lib/bcutil-jdk18on-1.78.jar"
+version = "1.80"
+path = "./lib/bcutil-jdk18on-1.80.jar"
