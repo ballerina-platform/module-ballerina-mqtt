@@ -3,4 +3,4 @@ id = "mqtt-compiler-plugin"
 class = "io.ballerina.stdlib.mqtt.compiler.MqttCompilerPlugin"
 
 [[dependency]]
-path = "../compiler-plugin/build/libs/mqtt-compiler-plugin-1.4.0-SNAPSHOT.jar"
+path = "../compiler-plugin/build/libs/mqtt-compiler-plugin-1.4.0.jar"
