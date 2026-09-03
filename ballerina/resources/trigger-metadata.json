@@ -1,0 +1,87 @@
+{
+  "version": "v1.0",
+
+  "listeners": [
+    {
+      "id": "$listener",
+      "doc": "Connects to an MQTT broker and dispatches each message received on the subscribed topics to the attached service.",
+      "type": { "name": "Listener" },
+      "services": ["$service"],
+      "multipleServicesAllowed": true,
+      "multipleServicesOfSameTypeAllowed": true
+    }
+  ],
+
+  "serviceTypes": [
+    {
+      "id": "$service",
+      "doc": "Consumes messages delivered on the topics given in the listener's subscriptions.",
+      "type": { "name": "Service" },
+      "concrete": false,
+      "multipleListenersAllowed": true,
+      "handlers": {
+        "backedByConcreteType": false,
+        "options": [
+          {
+            "id": "$service.onMessage",
+            "name": "onMessage",
+            "kind": "remote",
+            "doc": "Invoked once per message delivered on any topic given in the listener's subscriptions. The message parameter's declared type must be the connector's own mqtt:Message record as-is; unlike Kafka or RabbitMQ there is no narrower payload projection, so the handler decodes message.payload (byte[]) itself.",
+            "presence": "required",
+            "params": [
+              {
+                "id": "$service.onMessage.message",
+                "name": "message",
+                "doc": "The delivered message, carrying the raw payload bytes plus topic, QoS, and duplicate/retained flags.",
+                "type": { "name": "Message" },
+                "presence": "required"
+              },
+              {
+                "id": "$service.onMessage.caller",
+                "name": "caller",
+                "doc": "Handle for completing or responding to the message. Needed only when manualAcks is enabled (caller->complete()) or when replying to a request-style message published with a responseTopic (caller->respond()).",
+                "type": { "name": "Caller" },
+                "presence": "optional"
+              }
+            ],
+            "returns": { "id": "$service.onMessage.returns", "type": [{ "name": "error", "builtin": true }, { "name": "()", "builtin": true }] }
+          },
+          {
+            "id": "$service.onError",
+            "name": "onError",
+            "kind": "remote",
+            "doc": "Invoked when the underlying MQTT client loses its connection to the broker.",
+            "presence": "optional",
+            "params": [
+              {
+                "id": "$service.onError.err",
+                "name": "err",
+                "doc": "The connection failure reported by the client.",
+                "type": { "name": "Error" },
+                "presence": "required"
+              }
+            ],
+            "returns": { "id": "$service.onError.returns", "type": [{ "name": "error", "builtin": true }, { "name": "()", "builtin": true }] }
+          },
+          {
+            "id": "$service.onComplete",
+            "name": "onComplete",
+            "kind": "remote",
+            "doc": "Invoked once a message published through the caller, such as via caller->respond(), has completed delivery to the broker.",
+            "presence": "optional",
+            "params": [
+              {
+                "id": "$service.onComplete.token",
+                "name": "token",
+                "doc": "Identifies the message ID and topic of the publish that completed delivery.",
+                "type": { "name": "DeliveryToken" },
+                "presence": "required"
+              }
+            ],
+            "returns": { "id": "$service.onComplete.returns", "type": [{ "name": "error", "builtin": true }, { "name": "()", "builtin": true }] }
+          }
+        ]
+      }
+    }
+  ]
+}
