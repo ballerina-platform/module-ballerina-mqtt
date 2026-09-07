@@ -7,8 +7,7 @@
       "doc": "Connects to an MQTT broker and dispatches each message received on the subscribed topics to the attached service.",
       "type": { "name": "Listener" },
       "services": ["$service"],
-      "multipleServicesAllowed": true,
-      "multipleServicesOfSameTypeAllowed": true
+      "multipleServicesAllowed": false
     }
   ],
 
