@@ -16,7 +16,7 @@ graalvmCompatible = true
 groupId = "io.ballerina.stdlib"
 artifactId = "mqtt-native"
 version = "1.4.2"
-path = "../native/build/libs/mqtt-native-1.4.2-SNAPSHOT.jar"
+path = "../native/build/libs/mqtt-native-1.4.2.jar"
 
 [[platform.java21.dependency]]
 groupId = "org.eclipse.paho"
