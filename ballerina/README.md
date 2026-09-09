@@ -2,7 +2,7 @@
 
 This module provides an implementation to interact with MQTT servers via an MQTT client and listener, using the lightweight, publish-subscribe MQTT protocol for machine-to-machine messaging.
 
-## Key Features
+### Key Features
 
 - MQTT publisher client for sending messages to a topic
 - MQTT subscriber listener with `onMessage`/`onError` remote methods
