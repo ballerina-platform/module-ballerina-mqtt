@@ -95,6 +95,6 @@ release {
     }
 }
 
-task build {
+tasks.named('build') {
     dependsOn(':mqtt-ballerina:build')
 }
