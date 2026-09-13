@@ -34,10 +34,13 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Objects;
 import java.util.UUID;
@@ -227,12 +230,13 @@ public final class MqttUtils {
                 sslContext.init(null, tmf.getTrustManagers(), null);
             }
             return sslContext.getSocketFactory();
-        } catch (Exception e) {
+        } catch (GeneralSecurityException | IOException e) {
             throw createMqttError(e);
         }
     }
 
-    private static KeyManagerFactory getKeyManagerFactory(BMap<BString, BString> keyStore) throws Exception {
+    private static KeyManagerFactory getKeyManagerFactory(BMap<BString, BString> keyStore)
+            throws GeneralSecurityException, IOException {
         BString keyStorePath = keyStore.getStringValue(KEY_STORE_PATH);
         BString keyStorePassword = keyStore.getStringValue(KEY_STORE_PASSWORD);
         KeyStore ks = getKeyStore(keyStorePath, keyStorePassword);
@@ -242,7 +246,7 @@ public final class MqttUtils {
     }
 
     private static KeyManagerFactory getKeyManagerFactory(BString certFile, BString keyFile, BString keyPassword)
-            throws Exception {
+            throws GeneralSecurityException, IOException {
         Object publicKey = Decode.decodeRsaPublicKeyFromCertFile(certFile);
         if (publicKey instanceof BMap) {
             X509Certificate publicCert = (X509Certificate) ((BMap<BString, Object>) publicKey).getNativeData(
@@ -259,16 +263,17 @@ public final class MqttUtils {
                 kmf.init(ks, "".toCharArray());
                 return kmf;
             } else {
-                throw new Exception("Failed to get the private key from Crypto API. " +
+                throw new CertificateException("Failed to get the private key from Crypto API. " +
                         ((BError) privateKeyMap).getErrorMessage().getValue());
             }
         } else {
-            throw new Exception("Failed to get the public key from Crypto API. " +
+            throw new CertificateException("Failed to get the public key from Crypto API. " +
                     ((BError) publicKey).getErrorMessage().getValue());
         }
     }
 
-    private static TrustManagerFactory getTrustManagerFactory(BString cert) throws Exception {
+    private static TrustManagerFactory getTrustManagerFactory(BString cert)
+            throws GeneralSecurityException, IOException {
         Object publicKeyMap = Decode.decodeRsaPublicKeyFromCertFile(cert);
         if (publicKeyMap instanceof BMap) {
             X509Certificate x509Certificate = (X509Certificate) ((BMap<BString, Object>) publicKeyMap)
@@ -280,12 +285,13 @@ public final class MqttUtils {
             tmf.init(ts);
             return tmf;
         } else {
-            throw new Exception("Failed to get the public key from Crypto API. " +
+            throw new CertificateException("Failed to get the public key from Crypto API. " +
                     ((BError) publicKeyMap).getErrorMessage().getValue());
         }
     }
 
-    private static TrustManagerFactory getTrustManagerFactory(BMap<BString, BString> trustStore) throws Exception {
+    private static TrustManagerFactory getTrustManagerFactory(BMap<BString, BString> trustStore)
+            throws GeneralSecurityException, IOException {
         BString trustStorePath = trustStore.getStringValue(CRYPTO_TRUSTSTORE_PATH);
         BString trustStorePassword = trustStore.getStringValue(CRYPTO_TRUSTSTORE_PASSWORD);
         KeyStore ts = getKeyStore(trustStorePath, trustStorePassword);
@@ -294,7 +300,8 @@ public final class MqttUtils {
         return tmf;
     }
 
-    private static KeyStore getKeyStore(BString path, BString password) throws Exception {
+    private static KeyStore getKeyStore(BString path, BString password)
+            throws GeneralSecurityException, IOException {
         try (FileInputStream is = new FileInputStream(path.getValue())) {
             char[] passphrase = password.getValue().toCharArray();
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
