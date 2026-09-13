@@ -95,6 +95,14 @@ release {
     }
 }
 
-task build {
-    dependsOn(':mqtt-ballerina:build')
+if (tasks.names.contains('build')) {
+    tasks.named('build') {
+        dependsOn(':mqtt-ballerina:build')
+
+    }
+} else {
+    tasks.register('build') {
+        dependsOn(':mqtt-ballerina:build')
+
+    }
 }
