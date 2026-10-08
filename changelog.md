@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.4.3] - 2026-10-08
 
 ### Changed
+- Format the `Key Features` section of the README as a `###` heading for Connector Store discoverability
+- Narrow the exceptions thrown by the TLS key store and trust store handling to `GeneralSecurityException` and `IOException`
+- Upgrade Gradle to 9.5.1 and the Ballerina Gradle plugin to 4.0.0
+
+## [1.4.2] - 2026-09-08
+
+### Changed
 - [[#9132] Updated Keywords and Reformat README for Connector Store Discoverability](https://github.com/ballerina-platform/ballerina-library/issues/9132)
 
 ## [1.4.1] - 2026-05-11
