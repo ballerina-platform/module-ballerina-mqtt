@@ -114,7 +114,7 @@ public class MqttListenerCallbackImpl implements MqttCallback {
                     error.printStackTrace();
                 }
             } catch (BError bError) {
-                bError.printStackTrace();
+                invokeOnError(bError);
             }
         } else {
             try {
@@ -123,7 +123,7 @@ public class MqttListenerCallbackImpl implements MqttCallback {
                     error.printStackTrace();
                 }
             } catch (BError bError) {
-                bError.printStackTrace();
+                invokeOnError(bError);
             }
         }
     }
