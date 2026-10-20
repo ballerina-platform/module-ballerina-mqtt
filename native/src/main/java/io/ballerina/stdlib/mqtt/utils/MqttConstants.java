@@ -73,6 +73,7 @@ public final class MqttConstants {
     public static final BString DESTINATION_TOPIC = StringUtils.fromString("destinationTopic");
     public static final BString WILL_MESSAGE = StringUtils.fromString("willMessage");
     
+    public static final String SUBSCRIBED_TOPICS = "subscribedTopics";
     public static final String ONCOMPLETE = "onComplete";
     public static final String ONMESSAGE = "onMessage";
     public static final String ONERROR = "onError";

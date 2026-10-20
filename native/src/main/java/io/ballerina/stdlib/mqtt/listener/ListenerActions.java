@@ -67,28 +67,37 @@ public final class ListenerActions {
 
     public static Object externDetach(BObject clientObject, BObject service) {
         MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
+        String[] subscribedTopics = (String[]) clientObject.getNativeData(MqttConstants.SUBSCRIBED_TOPICS);
         try {
-            subscriber.disconnect();
+            if (subscribedTopics != null) {
+                subscriber.unsubscribe(subscribedTopics);
+            }
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }
+        subscriber.setCallback(null);
         clientObject.addNativeData(MqttConstants.SERVICE, null);
+        clientObject.addNativeData(MqttConstants.SUBSCRIBED_TOPICS, null);
         return null;
     }
 
     public static Object externStart(BObject clientObject, BArray subscriptions) {
         MqttClient subscriber = (MqttClient) clientObject.getNativeData(MqttConstants.MQTT_CLIENT);
         MqttSubscription[] mqttSubscriptions = new MqttSubscription[subscriptions.size()];
+        String[] topicNames = new String[subscriptions.size()];
         for (int i = 0; i < subscriptions.size(); i++) {
             BMap topicSubscription = (BMap) subscriptions.getValues()[i];
-            mqttSubscriptions[i] = new MqttSubscription(topicSubscription.getStringValue(MqttConstants.TOPIC)
-                    .getValue(), topicSubscription.getIntValue(MqttConstants.BQOS).intValue());
+            String topicName = topicSubscription.getStringValue(MqttConstants.TOPIC).getValue();
+            topicNames[i] = topicName;
+            mqttSubscriptions[i] = new MqttSubscription(topicName,
+                    topicSubscription.getIntValue(MqttConstants.BQOS).intValue());
         }
         try {
             subscriber.subscribe(mqttSubscriptions);
         } catch (MqttException e) {
             return MqttUtils.createMqttError(e);
         }
+        clientObject.addNativeData(MqttConstants.SUBSCRIBED_TOPICS, topicNames);
         return null;
     }
 
