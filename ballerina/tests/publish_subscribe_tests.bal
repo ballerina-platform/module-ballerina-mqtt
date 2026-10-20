@@ -528,3 +528,50 @@ function clientWillMessageTest() returns error? {
 
     test:assertTrue(receivedMessages.indexOf(message) == ());
 }
+
+@test:Config {enable: true}
+function detachAndReattachTest() returns error? {
+    string[] firstServiceMessages = [];
+    string[] secondServiceMessages = [];
+
+    Service firstService = service object {
+        remote function onMessage(Message message) returns error? {
+            firstServiceMessages.push(check string:fromBytes(message.payload));
+        }
+    };
+    Service secondService = service object {
+        remote function onMessage(Message message) returns error? {
+            secondServiceMessages.push(check string:fromBytes(message.payload));
+        }
+    };
+
+    string topic = "mqtt/detachreattachtest";
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), topic);
+    check 'listener.attach(firstService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+
+    // Publish to the first service
+    _ = check 'client->publish(topic, {payload: "message for first service".toBytes()});
+    runtime:sleep(2);
+    test:assertTrue(firstServiceMessages.indexOf("message for first service") != (),
+        "First service should receive the message");
+
+    // Detach the first service
+    check 'listener.detach(firstService);
+    runtime:sleep(1);
+
+    // Re-attach a new service and start to re-subscribe
+    check 'listener.attach(secondService);
+    check 'listener.'start();
+
+    // Publish to the second service
+    _ = check 'client->publish(topic, {payload: "message for second service".toBytes()});
+    runtime:sleep(2);
+
+    addListenerAndClientToArray('listener, 'client);
+
+    test:assertTrue(secondServiceMessages.indexOf("message for second service") != (),
+        "Second service should receive messages after re-attach and start");
+}
