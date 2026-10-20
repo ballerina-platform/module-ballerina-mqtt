@@ -561,7 +561,7 @@ function onErrorInvokedOnMessageWithCallerPanicTest() returns error? {
     string onErrorMessage = "";
     Service panicService = service object {
         remote function onMessage(Message message, Caller caller) returns error? {
-            log:printInfo("Received message", payload = message.toString(), caller = caller.toString());
+            log:printInfo("Received message with caller", payload = message.toString(), hasCaller = caller is Caller);
             panic error("Simulated invocation failure with caller");
         }
 
