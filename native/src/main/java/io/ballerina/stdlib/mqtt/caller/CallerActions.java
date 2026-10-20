@@ -29,7 +29,6 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -42,6 +41,7 @@ public final class CallerActions {
 
     private CallerActions() {}
 
+    private static final String MQTT_OPERATION_FAILED = "MQTT operation failed";
     private static final ExecutorService executorService = Executors.newCachedThreadPool(new CallerThreadFactory());
 
     public static Object complete(Environment env, BObject callerObject) {
@@ -60,8 +60,9 @@ public final class CallerActions {
             });
             try {
                 return future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                return MqttUtils.createMqttError(e);
+            } catch (Exception e) {
+                String errorMsg = e.getMessage() != null ? e.getMessage() : MQTT_OPERATION_FAILED;
+                return MqttUtils.createMqttError(new Exception(errorMsg, e));
             }
         });
     }
@@ -89,8 +90,9 @@ public final class CallerActions {
             });
             try {
                 return future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                return MqttUtils.createMqttError(e);
+            } catch (Exception e) {
+                String errorMsg = e.getMessage() != null ? e.getMessage() : MQTT_OPERATION_FAILED;
+                return MqttUtils.createMqttError(new Exception(errorMsg, e));
             }
         });
     }
