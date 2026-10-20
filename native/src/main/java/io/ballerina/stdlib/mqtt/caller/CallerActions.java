@@ -28,6 +28,8 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,15 +48,21 @@ public final class CallerActions {
         MqttClient subscriber = (MqttClient) callerObject.getNativeData(MqttConstants.SUBSCRIBER);
         int messageId = (int) callerObject.getNativeData(MqttConstants.MESSAGE_ID);
         int qos = (int) callerObject.getNativeData(MqttConstants.QOS);
+        CompletableFuture<Object> future = new CompletableFuture<>();
         return env.yieldAndRun(() -> {
             executorService.execute(() -> {
                 try {
                     subscriber.messageArrivedComplete(messageId, qos);
+                    future.complete(null);
                 } catch (MqttException e) {
-                    throw MqttUtils.createMqttError(e);
+                    future.complete(MqttUtils.createMqttError(e));
                 }
             });
-            return null;
+            try {
+                return future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                return MqttUtils.createMqttError(e);
+            }
         });
     }
 
@@ -69,15 +77,21 @@ public final class CallerActions {
         if (Objects.nonNull(correlationData)) {
             mqttMessage.getProperties().setCorrelationData(correlationData);
         }
+        CompletableFuture<Object> future = new CompletableFuture<>();
         return env.yieldAndRun(() -> {
             executorService.execute(() -> {
                 try {
                     subscriber.publish(responseTopic, mqttMessage);
+                    future.complete(null);
                 } catch (MqttException e) {
-                    throw MqttUtils.createMqttError(e);
+                    future.complete(MqttUtils.createMqttError(e));
                 }
             });
-            return null;
+            try {
+                return future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                return MqttUtils.createMqttError(e);
+            }
         });
     }
 }
