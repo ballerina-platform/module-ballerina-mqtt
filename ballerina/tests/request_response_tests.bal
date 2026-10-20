@@ -263,3 +263,121 @@ function readResponse(stream<Message, error?> respStream, string[] receivedValue
         }
     }
 }
+
+@test:Config {enable: true}
+function respondReturnsNilOnSuccessTest() returns error? {
+    string? respondResult = "not called";
+    Service respondCheckService = service object {
+        remote function onMessage(Message message, Caller caller) returns error? {
+            log:printInfo(check string:fromBytes(message.payload));
+            Error? err = caller->respond({
+                payload: "response payload".toBytes()
+            });
+            if err is Error {
+                respondResult = err.message();
+            } else {
+                respondResult = ();
+            }
+        }
+
+        remote function onError(Error err) returns error? {
+            log:printError("Error occurred ", err);
+        }
+    };
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/respondsuccesstest");
+    check 'listener.attach(respondCheckService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    check 'client->subscribe("mqtt/response/respondsuccesstest");
+    _ = check 'client->publish("mqtt/request/respondsuccesstest", {
+        payload: "test message".toBytes(),
+        properties: {responseTopic: "mqtt/response/respondsuccesstest"}
+    });
+
+    int waitCount = 0;
+    while respondResult == "not called" && waitCount < 20 {
+        runtime:sleep(0.1);
+        waitCount += 1;
+    }
+
+    addListenerAndClientToArray('listener, 'client);
+
+    test:assertEquals(respondResult, (), "respond() should return nil on successful publish");
+}
+
+@test:Config {enable: true}
+function respondAfterDisconnectReturnsErrorTest() returns error? {
+    Caller? callerRef = ();
+    Service storeCallerService = service object {
+        remote function onMessage(Message message, Caller caller) returns error? {
+            log:printInfo(check string:fromBytes(message.payload));
+            callerRef = caller;
+        }
+        remote function onError(Error err) returns error? {
+            log:printError("Error occurred ", err);
+        }
+    };
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/respondafterdisconnect");
+    check 'listener.attach(storeCallerService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    _ = check 'client->publish("mqtt/request/respondafterdisconnect", {
+        payload: "test".toBytes(),
+        properties: {responseTopic: "mqtt/response/respondafterdisconnect"}
+    });
+
+    int waitCount = 0;
+    while callerRef is () && waitCount < 20 {
+        runtime:sleep(0.1);
+        waitCount += 1;
+    }
+    test:assertTrue(callerRef is Caller, "Caller should have been stored by onMessage");
+
+    check 'listener.gracefulStop();
+
+    Caller storedCaller = <Caller>callerRef;
+    Error? err = storedCaller->respond({payload: "response".toBytes()});
+    test:assertTrue(err is Error, "respond() should return error after listener disconnected");
+
+    addListenerAndClientToArray('client = 'client);
+}
+
+@test:Config {enable: true}
+function completeAfterDisconnectReturnsErrorTest() returns error? {
+    Caller? callerRef = ();
+    Service storeCallerService = service object {
+        remote function onMessage(Message message, Caller caller) returns error? {
+            log:printInfo(check string:fromBytes(message.payload));
+            callerRef = caller;
+        }
+        remote function onError(Error err) returns error? {
+            log:printError("Error occurred ", err);
+        }
+    };
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/completeafterdisconnect",
+        {manualAcks: true});
+    check 'listener.attach(storeCallerService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    _ = check 'client->publish("mqtt/request/completeafterdisconnect", {
+        payload: "test".toBytes()
+    });
+
+    int waitCount = 0;
+    while callerRef is () && waitCount < 20 {
+        runtime:sleep(0.1);
+        waitCount += 1;
+    }
+    test:assertTrue(callerRef is Caller, "Caller should have been stored by onMessage");
+
+    check 'listener.gracefulStop();
+
+    Caller storedCaller = <Caller>callerRef;
+    Error? err = storedCaller->complete();
+    test:assertTrue(err is Error, "complete() should return error after listener disconnected");
+
+    addListenerAndClientToArray('client = 'client);
+}

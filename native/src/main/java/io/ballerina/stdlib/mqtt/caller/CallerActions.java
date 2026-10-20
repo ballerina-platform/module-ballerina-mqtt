@@ -28,6 +28,7 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,21 +41,29 @@ public final class CallerActions {
 
     private CallerActions() {}
 
+    private static final String MQTT_OPERATION_FAILED = "MQTT operation failed";
     private static final ExecutorService executorService = Executors.newCachedThreadPool(new CallerThreadFactory());
 
     public static Object complete(Environment env, BObject callerObject) {
         MqttClient subscriber = (MqttClient) callerObject.getNativeData(MqttConstants.SUBSCRIBER);
         int messageId = (int) callerObject.getNativeData(MqttConstants.MESSAGE_ID);
         int qos = (int) callerObject.getNativeData(MqttConstants.QOS);
+        CompletableFuture<Object> future = new CompletableFuture<>();
         return env.yieldAndRun(() -> {
             executorService.execute(() -> {
                 try {
                     subscriber.messageArrivedComplete(messageId, qos);
+                    future.complete(null);
                 } catch (MqttException e) {
-                    throw MqttUtils.createMqttError(e);
+                    future.complete(MqttUtils.createMqttError(e));
                 }
             });
-            return null;
+            try {
+                return future.get();
+            } catch (Exception e) {
+                String errorMsg = e.getMessage() != null ? e.getMessage() : MQTT_OPERATION_FAILED;
+                return MqttUtils.createMqttError(new Exception(errorMsg, e));
+            }
         });
     }
 
@@ -69,15 +78,22 @@ public final class CallerActions {
         if (Objects.nonNull(correlationData)) {
             mqttMessage.getProperties().setCorrelationData(correlationData);
         }
+        CompletableFuture<Object> future = new CompletableFuture<>();
         return env.yieldAndRun(() -> {
             executorService.execute(() -> {
                 try {
                     subscriber.publish(responseTopic, mqttMessage);
+                    future.complete(null);
                 } catch (MqttException e) {
-                    throw MqttUtils.createMqttError(e);
+                    future.complete(MqttUtils.createMqttError(e));
                 }
             });
-            return null;
+            try {
+                return future.get();
+            } catch (Exception e) {
+                String errorMsg = e.getMessage() != null ? e.getMessage() : MQTT_OPERATION_FAILED;
+                return MqttUtils.createMqttError(new Exception(errorMsg, e));
+            }
         });
     }
 }
