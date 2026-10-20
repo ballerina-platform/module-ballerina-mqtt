@@ -528,3 +528,57 @@ function clientWillMessageTest() returns error? {
 
     test:assertTrue(receivedMessages.indexOf(message) == ());
 }
+
+@test:Config {enable: true}
+function onErrorInvokedOnMessagePanicTest() returns error? {
+    string onErrorMessage = "";
+    Service panicService = service object {
+        remote function onMessage(Message message) returns error? {
+            log:printInfo("Received message", payload = message.toString());
+            panic error("Simulated invocation failure");
+        }
+
+        remote function onError(Error err) returns error? {
+            onErrorMessage = err.message();
+        }
+    };
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/onerrorpanictest");
+    check 'listener.attach(panicService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    _ = check 'client->publish("mqtt/onerrorpanictest", {payload: "trigger panic".toBytes()});
+    runtime:sleep(2);
+
+    addListenerAndClientToArray('listener, 'client);
+
+    test:assertEquals(onErrorMessage, "Simulated invocation failure",
+        "onError should be invoked when onMessage fails with a panic");
+}
+
+@test:Config {enable: true}
+function onErrorInvokedOnMessageWithCallerPanicTest() returns error? {
+    string onErrorMessage = "";
+    Service panicService = service object {
+        remote function onMessage(Message message, Caller caller) returns error? {
+            log:printInfo("Received message with caller", payload = message.toString(), hasCaller = caller is Caller);
+            panic error("Simulated invocation failure with caller");
+        }
+
+        remote function onError(Error err) returns error? {
+            onErrorMessage = err.message();
+        }
+    };
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/onerrorpaniccallertest");
+    check 'listener.attach(panicService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    _ = check 'client->publish("mqtt/onerrorpaniccallertest", {payload: "trigger panic".toBytes()});
+    runtime:sleep(2);
+
+    addListenerAndClientToArray('listener, 'client);
+
+    test:assertEquals(onErrorMessage, "Simulated invocation failure with caller",
+        "onError should be invoked when onMessage with caller fails with a panic");
+}
