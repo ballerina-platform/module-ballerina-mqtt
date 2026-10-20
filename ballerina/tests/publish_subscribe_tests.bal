@@ -533,7 +533,8 @@ function clientWillMessageTest() returns error? {
 function onErrorInvokedOnMessagePanicTest() returns error? {
     string onErrorMessage = "";
     Service panicService = service object {
-        remote function onMessage(Message _message) returns error? {
+        remote function onMessage(Message message) returns error? {
+            log:printInfo("Received message", payload = message.toString());
             panic error("Simulated invocation failure");
         }
 
@@ -559,7 +560,8 @@ function onErrorInvokedOnMessagePanicTest() returns error? {
 function onErrorInvokedOnMessageWithCallerPanicTest() returns error? {
     string onErrorMessage = "";
     Service panicService = service object {
-        remote function onMessage(Message _message, Caller _caller) returns error? {
+        remote function onMessage(Message message, Caller caller) returns error? {
+            log:printInfo("Received message", payload = message.toString(), caller = caller.toString());
             panic error("Simulated invocation failure with caller");
         }
 
