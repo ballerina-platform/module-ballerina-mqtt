@@ -262,14 +262,14 @@ by subscribing to a response topic. To subscribe to a response topic, the `subsc
 # + return - `mqtt:Error` if an error occurs while subscribing or else `()`
 isolated remote function subscribe(string|string[]|mqtt:Subscription|mqtt:Subscription[] subscriptions) returns mqtt:Error?;
 ```
-* To receive the responses sent from a subscriber, the `receiveResponse` method can be used. This method returns a `stream` 
+* To receive the responses sent from a subscriber, the `receive` method can be used. This method returns a `stream` 
 of `mqtt:Message`s and the publisher can asynchronously iterate through the stream to receive the responses.
 ```ballerina
 # Receives messages from the server.
 #
 # + T - Type of the stream to return
 # + return - `stream<Message, error?>` or else`mqtt:Error` if an error occurs while receiving the response
-isolated remote function receiveResponse(typedesc<stream<Message, error?>> T = <>) returns T|mqtt:Error;
+isolated remote function receive(typedesc<stream<Message, error?>> T = <>) returns T|mqtt:Error;
 ```
 
 Sample usage of the client API in the request/response scenario is as follows.
@@ -405,8 +405,9 @@ remote function onError(mqtt:Error err) returns error? {
     // process error
 } 
 ```
-This is an optional remote function that is invoked when an error occurs when invoking the `onMessage` method. If the 
-method is not implemented, the error will be logged to the console. Any errors returning from this function will be 
+This is an optional remote function that is invoked when an error occurs in the listener context, such as a failure to
+invoke the `onMessage` method (e.g., payload binding errors), a connection loss, or an MQTT protocol error. If the
+method is not implemented, the error will be logged to the console. Any errors returning from this function will be
 logged to the console.
 
 * `onComplete`
@@ -415,8 +416,8 @@ remote function onComplete(mqtt:DeliveryToken token) returns error? {
     // handle the delivery token
 }
 ```
-This is an optional remote function that is invoked when the message is successfully delivered to the MQTT broker in 
-the request-response scenario.
+This is an optional remote function that is invoked when a response message sent via `Caller->respond()` is
+successfully delivered to the MQTT broker.
 
 The Listener has the following functions to manage a service.
 * `attach()` - can be used to attach a service to the listener dynamically.
