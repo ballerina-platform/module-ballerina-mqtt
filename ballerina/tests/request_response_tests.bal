@@ -263,3 +263,39 @@ function readResponse(stream<Message, error?> respStream, string[] receivedValue
         }
     }
 }
+
+@test:Config {enable: true}
+function respondReturnsNilOnSuccessTest() returns error? {
+    string? respondResult = "not called";
+    Service respondCheckService = service object {
+        remote function onMessage(Message message, Caller caller) returns error? {
+            Error? err = caller->respond({
+                payload: "response payload".toBytes()
+            });
+            if err is Error {
+                respondResult = err.message();
+            } else {
+                respondResult = ();
+            }
+        }
+
+        remote function onError(Error err) returns error? {
+            log:printError("Error occurred ", err);
+        }
+    };
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/request/respondsuccesstest");
+    check 'listener.attach(respondCheckService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    check 'client->subscribe("mqtt/response/respondsuccesstest");
+    _ = check 'client->publish("mqtt/request/respondsuccesstest", {
+        payload: "test message".toBytes(),
+        properties: {responseTopic: "mqtt/response/respondsuccesstest"}
+    });
+    runtime:sleep(2);
+
+    addListenerAndClientToArray('listener, 'client);
+
+    test:assertEquals(respondResult, (), "respond() should return nil on successful publish");
+}
