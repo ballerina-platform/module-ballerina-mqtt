@@ -528,3 +528,29 @@ function clientWillMessageTest() returns error? {
 
     test:assertTrue(receivedMessages.indexOf(message) == ());
 }
+
+@test:Config {enable: true}
+function onErrorInvokedOnMessagePanicTest() returns error? {
+    string onErrorMessage = "";
+    Service panicService = service object {
+        remote function onMessage(Message message) returns error? {
+            panic error("Simulated invocation failure");
+        }
+
+        remote function onError(Error err) returns error? {
+            onErrorMessage = err.message();
+        }
+    };
+    Listener 'listener = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString(), "mqtt/onerrorpanictest");
+    check 'listener.attach(panicService);
+    check 'listener.'start();
+
+    Client 'client = check new (NO_AUTH_ENDPOINT, uuid:createType1AsString());
+    _ = check 'client->publish("mqtt/onerrorpanictest", {payload: "trigger panic".toBytes()});
+    runtime:sleep(2);
+
+    addListenerAndClientToArray('listener, 'client);
+
+    test:assertEquals(onErrorMessage, "Simulated invocation failure",
+        "onError should be invoked when onMessage fails with a panic");
+}
